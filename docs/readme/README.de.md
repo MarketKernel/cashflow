@@ -38,8 +38,9 @@ läuft.
 
 ## Verwendung
 
-1. Laden Sie `cashflow-<version>.html` aus den Releases herunter (oder bauen Sie sie selbst:
-   `./build.sh`) und öffnen Sie sie in einem Browser — auch von der Festplatte aus geht das.
+1. Öffnen Sie die Online-Version unter <https://cash.marketkernel.com>, oder laden Sie
+   `cashflow-<version>.html` aus den Releases herunter (oder bauen Sie sie selbst: `./build.sh`)
+   und öffnen Sie sie in einem Browser — auch von der Festplatte aus geht das.
 2. Wählen Sie die Basiswährung: jede Summe wird darin angezeigt. Fügen Sie unter
    **Einstellungen** die weiteren Währungen hinzu, die Sie besitzen, mit ihren Kursen — von
    Hand eingegeben, die App geht nie online.
@@ -61,8 +62,9 @@ läuft.
 
 Die Tabs wandern in eine Leiste am unteren Rand, und die Formulare öffnen sich als Sheets am
 unteren Bildschirmrand; die Tastatur verdeckt das gerade bearbeitete Feld nicht. Installieren
-Sie die Online-Version: unter Android über Chromes ⋮-Menü → App installieren; unter iOS über
-Teilen → Zum Home-Bildschirm. Es gibt keine Synchronisierung zwischen Geräten: um die Daten zu
+Sie die Online-Version von <https://cash.marketkernel.com>: unter Android über Chromes ⋮-Menü →
+App installieren; unter iOS über Teilen → Zum Home-Bildschirm. Es gibt keine Synchronisierung
+zwischen Geräten: um die Daten zu
 übertragen, exportieren Sie sie auf dem einen Gerät und importieren Sie sie auf dem anderen
 (Einstellungen → Daten).
 
@@ -269,9 +271,18 @@ sonst `cashflow-<tag>.html` und `SHA256SUMS.txt` an.
 ## GitHub Pages
 
 `.github/workflows/pages.yml` baut und testet jeden Push nach `main` und veröffentlicht
-`build/pages/` auf GitHub Pages (Settings → Pages → Source: GitHub Actions). Die Daten der
-Online-Version gehören zu ihrer Adresse; eine von der Festplatte geöffnete Kopie hat ihre
-eigenen Daten.
+`build/pages/` auf GitHub Pages (Settings → Pages → Source: GitHub Actions). Sie wird unter
+<https://cash.marketkernel.com> bereitgestellt: die Domain ist in Settings → Pages → Custom
+domain gesetzt, mit aktiviertem Enforce HTTPS — ein Service Worker braucht HTTPS. Ein
+Workflow-Deployment braucht keine `CNAME`-Datei. Jeder Pfad in `build/pages/` ist relativ,
+sodass derselbe Build sowohl im Stammverzeichnis einer Domain als auch unter dem `/<repo>/`-
+Präfix einer Projektseite funktioniert.
+
+Die Daten der Online-Version gehören zu ihrer Adresse; eine von der Festplatte geöffnete Kopie
+hat ihre eigenen Daten. Die alte Adresse, `marketkernel.github.io/cashflow/`, leitet jetzt auf
+die Domain um, aber ihre Daten bleiben dort, wo sie waren: wer sie benutzt hat, sollte die Daten
+dort zuerst exportieren (eine von dort installierte App läuft offline weiter) und sie unter der
+neuen Adresse importieren.
 
 Jedes Deployment ändert den Cache-Namen in `sw.js`, sodass der Browser von sich aus den neuen
 Worker übernimmt — beim Start mit einer Verbindung, alle paar Stunden während die App geöffnet

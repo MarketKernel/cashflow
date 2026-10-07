@@ -34,8 +34,8 @@ SQLite 数据库（SQLite 编译为 WebAssembly，内嵌在文件中），由浏
 
 ## 使用方法
 
-1. 从发布页下载 `cashflow-<version>.html`（或自行构建：`./build.sh`），然后在浏览器中打开——直接从
-   磁盘打开也可以。
+1. 打开 <https://cash.marketkernel.com> 上的在线版本，或从发布页下载 `cashflow-<version>.html`
+   （或自行构建：`./build.sh`），然后在浏览器中打开——直接从磁盘打开也可以。
 2. 选择本位货币：所有总额都以它显示。在**设置**中添加你持有的其他货币及其汇率——需手动输入，应用
    从不联网。
 3. 在**账户**中添加你的账户（银行卡、现金、存款、交易所账户）和债务（信用卡、贷款、借款），并填写
@@ -49,9 +49,10 @@ SQLite 数据库（SQLite 编译为 WebAssembly，内嵌在文件中），由浏
 
 ### 在手机上
 
-标签页会移到屏幕底部的栏中，表单则以底部弹出面板的形式打开；键盘不会遮住正在输入的字段。安装在线
-版本：在 Android 上，通过 Chrome 的 ⋮ 菜单 → 安装应用；在 iOS 上，通过分享 → 添加到主屏幕。设备之间
-不会同步：要迁移数据，请在一台设备上导出，再在另一台设备上导入（设置 → 数据）。
+标签页会移到屏幕底部的栏中，表单则以底部弹出面板的形式打开；键盘不会遮住正在输入的字段。从
+<https://cash.marketkernel.com> 安装在线版本：在 Android 上，通过 Chrome 的 ⋮ 菜单 → 安装应用；
+在 iOS 上，通过分享 → 添加到主屏幕。设备之间不会同步：要迁移数据，请在一台设备上导出，再在另一台
+设备上导入（设置 → 数据）。
 
 ## 工作原理
 
@@ -216,8 +217,14 @@ git push --follow-tags      # 该标签会触发 .github/workflows/release.yml
 ## GitHub Pages
 
 `.github/workflows/pages.yml` 会在每次推送到 `main` 时进行构建和测试，并将 `build/pages/` 部署到
-GitHub Pages（设置 → Pages → Source：GitHub Actions）。在线版本的数据归属于它的网址；从磁盘打开的
-副本则拥有自己独立的数据。
+GitHub Pages（设置 → Pages → Source：GitHub Actions）。它部署在 <https://cash.marketkernel.com>：
+该域名在 设置 → Pages → Custom domain 中设置，并开启了 Enforce HTTPS——service worker 需要
+HTTPS。通过工作流部署无需 `CNAME` 文件。`build/pages/` 中的每一个路径都是相对路径，因此同一份
+构建既能运行在某个域名的根目录下，也能运行在某个项目站点的 `/<repo>/` 前缀下。
+
+在线版本的数据归属于它的网址；从磁盘打开的副本则拥有自己独立的数据。旧地址
+`marketkernel.github.io/cashflow/` 现在会重定向到该域名，但它的数据仍留在原处：曾经用过它的人应
+先在那里导出数据（从那里安装的应用会继续离线运行），再在新地址导入。
 
 每次部署都会更改 `sw.js` 中的缓存名称，因此浏览器会自行获取新的 worker——可能在有网络连接时启动
 应用、应用保持打开期间每隔几个小时，或者在设置 → **检查更新**被点击时触发。新的 worker 会把自己的

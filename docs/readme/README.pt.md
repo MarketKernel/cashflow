@@ -37,8 +37,9 @@ também é um PWA que pode ser instalado e roda em sua própria janela.
 
 ## Como usar
 
-1. Baixe `cashflow-<version>.html` das releases (ou compile: `./build.sh`) e abra em um
-   navegador — abrir direto do disco funciona normalmente.
+1. Abra a versão online em <https://cash.marketkernel.com>, ou baixe
+   `cashflow-<version>.html` das releases (ou compile: `./build.sh`) e abra em um navegador —
+   abrir direto do disco funciona normalmente.
 2. Escolha a moeda base: todo total é mostrado nela. Em **Configurações**, adicione as outras
    moedas que você tem, com suas cotações — digitadas à mão, o aplicativo nunca se conecta à
    internet.
@@ -56,9 +57,9 @@ também é um PWA que pode ser instalado e roda em sua própria janela.
 ### No celular
 
 As abas passam para uma barra na parte de baixo, e os formulários abrem como folhas na parte
-inferior da tela; o teclado não cobre o campo que está sendo digitado. Instale a versão online:
-no Android, o menu ⋮ do Chrome → Instalar aplicativo; no iOS, Compartilhar → Adicionar à Tela de
-Início. Não há sincronização entre dispositivos: para mover os dados, exporte em um e importe no
+inferior da tela; o teclado não cobre o campo que está sendo digitado. Instale a versão online a
+partir de <https://cash.marketkernel.com>: no Android, o menu ⋮ do Chrome → Instalar aplicativo;
+no iOS, Compartilhar → Adicionar à Tela de Início. Não há sincronização entre dispositivos: para mover os dados, exporte em um e importe no
 outro (Configurações → Dados).
 
 ## Como funciona
@@ -257,8 +258,16 @@ O workflow de release para se a tag e o `package.json` não baterem, depois anex
 ## GitHub Pages
 
 `.github/workflows/pages.yml` compila e testa cada push para `main` e implanta `build/pages/` no
-GitHub Pages (Settings → Pages → Source: GitHub Actions). Os dados da versão online pertencem ao
-seu endereço; uma cópia aberta do disco tem seus próprios dados.
+GitHub Pages (Settings → Pages → Source: GitHub Actions). Ela é servida em
+<https://cash.marketkernel.com>: o domínio é definido em Settings → Pages → Custom domain, com
+Enforce HTTPS ativado — um service worker precisa de HTTPS. Um deploy pelo workflow não precisa
+de arquivo `CNAME`. Todo caminho em `build/pages/` é relativo, então o mesmo build funciona tanto
+na raiz de um domínio quanto sob o prefixo `/<repo>/` de um site de projeto.
+
+Os dados da versão online pertencem ao seu endereço; uma cópia aberta do disco tem seus próprios
+dados. O endereço antigo, `marketkernel.github.io/cashflow/`, agora redireciona para o domínio,
+mas seus dados continuam onde estavam: quem o usava deve primeiro exportar os dados lá (um
+aplicativo instalado a partir dele continua rodando offline) e importá-los no novo endereço.
 
 Cada deploy muda o nome do cache em `sw.js`, então o navegador pega o novo worker sozinho — ao
 abrir com conexão, a cada poucas horas enquanto o aplicativo está aberto, ou quando Configurações

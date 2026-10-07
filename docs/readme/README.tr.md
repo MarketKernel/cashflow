@@ -37,8 +37,9 @@ içinde, WebAssembly'ye derlenmiş SQLite). Aynı sayfa, kurulabilen ve kendi pe
 
 ## Nasıl kullanılır
 
-1. Sürümlerden `cashflow-<version>.html` dosyasını indirin (veya kendiniz derleyin:
-   `./build.sh`) ve bir tarayıcıda açın — diskten açmak sorun değil.
+1. Çevrimiçi sürümü <https://cash.marketkernel.com> adresinden açın, ya da sürümlerden
+   `cashflow-<version>.html` dosyasını indirin (veya kendiniz derleyin: `./build.sh`) ve bir
+   tarayıcıda açın — diskten açmak sorun değil.
 2. Baz para birimini seçin: tüm toplamlar bu birimde gösterilir. **Ayarlar**'da, sahip
    olduğunuz diğer para birimlerini kurlarıyla birlikte ekleyin — elle girilir, uygulama
    hiçbir zaman internete bağlanmaz.
@@ -56,8 +57,9 @@ içinde, WebAssembly'ye derlenmiş SQLite). Aynı sayfa, kurulabilen ve kendi pe
 ### Telefonda
 
 Sekmeler alt tarafta bir çubuğa taşınır ve formlar ekranın altında sayfa olarak açılır;
-klavye, yazılmakta olan alanı kapatmaz. Çevrimiçi sürümü kurun: Android'de Chrome'un ⋮ menüsü
-→ Uygulamayı yükle; iOS'ta Paylaş → Ana Ekrana Ekle. Cihazlar arasında senkronizasyon yoktur:
+klavye, yazılmakta olan alanı kapatmaz. Çevrimiçi sürümü <https://cash.marketkernel.com>
+adresinden kurun: Android'de Chrome'un ⋮ menüsü → Uygulamayı yükle; iOS'ta Paylaş → Ana Ekrana
+Ekle. Cihazlar arasında senkronizasyon yoktur:
 verileri taşımak için birinde dışa, diğerinde içe aktarın (Ayarlar → Veriler).
 
 ## Nasıl çalışır
@@ -259,8 +261,17 @@ Yayın iş akışı, etiket ile `package.json` uyuşmuyorsa durur; aksi hâlde
 ## GitHub Pages
 
 `.github/workflows/pages.yml`, `main`'e her push'ta derler ve test eder, ardından
-`build/pages/`'i GitHub Pages'e dağıtır (Settings → Pages → Source: GitHub Actions). Çevrimiçi
-sürümün verileri kendi adresine aittir; diskten açılan bir kopyanın kendi verileri vardır.
+`build/pages/`'i GitHub Pages'e dağıtır (Settings → Pages → Source: GitHub Actions).
+<https://cash.marketkernel.com> adresinden sunulur: alan adı Settings → Pages → Custom domain'de
+ayarlanır, Enforce HTTPS açık olarak — bir service worker HTTPS'e ihtiyaç duyar. Workflow ile
+yapılan bir dağıtım hiçbir `CNAME` dosyası gerektirmez. `build/pages/` içindeki her yol görelidir,
+böylece aynı build hem bir alan adının kökünde hem de bir proje sitesinin `/<repo>/` öneki
+altında çalışır.
+
+Çevrimiçi sürümün verileri kendi adresine aittir; diskten açılan bir kopyanın kendi verileri
+vardır. Eski adres, `marketkernel.github.io/cashflow/`, artık alan adına yönlendiriyor, ama
+verileri olduğu yerde kalıyor: onu kullanan önce verilerini orada dışa aktarmalı (oradan kurulmuş
+bir uygulama çevrimdışı çalışmaya devam eder) ve yeni adreste içe aktarmalı.
 
 Her dağıtım `sw.js` içindeki önbellek adını değiştirir, böylece tarayıcı yeni worker'ı
 kendiliğinden fark eder — bağlantılı bir açılışta, uygulama açıkken birkaç saatte bir, veya

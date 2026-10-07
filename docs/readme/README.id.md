@@ -38,7 +38,8 @@ jendelanya sendiri.
 
 ## Cara penggunaan
 
-1. Unduh `cashflow-<version>.html` dari rilis (atau bangun sendiri: `./build.sh`) dan buka di
+1. Buka versi daringnya di <https://cash.marketkernel.com>, atau unduh
+   `cashflow-<version>.html` dari rilis (atau bangun sendiri: `./build.sh`) dan buka di
    browser — dibuka dari disk pun tidak masalah.
 2. Pilih mata uang dasar: setiap total ditampilkan dalam mata uang ini. Di **Pengaturan**,
    tambahkan mata uang lain yang Anda miliki beserta kursnya — dimasukkan secara manual,
@@ -57,8 +58,9 @@ jendelanya sendiri.
 ### Di ponsel
 
 Tab berpindah ke bilah di bagian bawah, dan formulir terbuka sebagai lembar di bagian bawah
-layar; papan ketik tidak menutupi kolom yang sedang diisi. Pasang versi daringnya: di
-Android, menu ⋮ Chrome → Instal aplikasi; di iOS, Bagikan → Tambahkan ke Layar Utama. Tidak
+layar; papan ketik tidak menutupi kolom yang sedang diisi. Pasang versi daringnya dari
+<https://cash.marketkernel.com>: di Android, menu ⋮ Chrome → Instal aplikasi; di iOS, Bagikan →
+Tambahkan ke Layar Utama. Tidak
 ada sinkronisasi antar perangkat: untuk memindahkan data, ekspor di satu perangkat dan impor
 di perangkat lainnya (Pengaturan → Data).
 
@@ -268,8 +270,18 @@ Alur kerja rilis berhenti jika tag dan `package.json` tidak sesuai, lalu melampi
 ## GitHub Pages
 
 `.github/workflows/pages.yml` membangun dan menguji setiap push ke `main`, lalu menyebarkan
-`build/pages/` ke GitHub Pages (Settings → Pages → Source: GitHub Actions). Data versi daring
-dimiliki oleh alamatnya sendiri; salinan yang dibuka dari disk memiliki datanya sendiri.
+`build/pages/` ke GitHub Pages (Settings → Pages → Source: GitHub Actions). Ia dilayani di
+<https://cash.marketkernel.com>: domainnya diatur di Settings → Pages → Custom domain, dengan
+Enforce HTTPS aktif — service worker membutuhkan HTTPS. Penyebaran lewat workflow tidak
+membutuhkan berkas `CNAME` sama sekali. Setiap path di `build/pages/` bersifat relatif, sehingga
+build yang sama berfungsi baik di akar sebuah domain maupun di bawah awalan `/<repo>/` suatu
+situs proyek.
+
+Data versi daring dimiliki oleh alamatnya sendiri; salinan yang dibuka dari disk memiliki
+datanya sendiri. Alamat lama, `marketkernel.github.io/cashflow/`, sekarang mengalihkan ke
+domain tersebut, tetapi datanya tetap berada di sana: siapa pun yang memakainya sebaiknya
+mengekspor datanya di sana terlebih dahulu (aplikasi yang terpasang dari alamat itu tetap
+berjalan secara luring) lalu mengimpornya di alamat yang baru.
 
 Setiap penyebaran mengubah nama cache di `sw.js`, sehingga browser mengambil worker baru
 dengan sendirinya — saat dibuka dengan koneksi internet, setiap beberapa jam selagi aplikasi

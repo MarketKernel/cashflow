@@ -36,8 +36,9 @@ its own window.
 
 ## How to use
 
-1. Download `cashflow-<version>.html` from the releases (or build it: `./build.sh`) and open it
-   in a browser — from disk is fine.
+1. Open the online version at <https://cash.marketkernel.com>, or download
+   `cashflow-<version>.html` from the releases (or build it: `./build.sh`) and open it in a
+   browser — from disk is fine.
 2. Choose the base currency: every total is shown in it. In **Settings**, add the other
    currencies you hold, with their rates — typed in by hand, the app never goes online.
 3. On **Accounts**, add your accounts (a card, cash, a deposit, an exchange) and debts (a
@@ -53,8 +54,9 @@ its own window.
 ### On a phone
 
 The tabs move to a bar along the bottom, and the forms open as sheets at the bottom of the
-screen; the keyboard does not cover the field being typed in. Install the online version: on Android,
-Chrome's ⋮ menu → Install app; on iOS, Share → Add to Home Screen. There is no sync between
+screen; the keyboard does not cover the field being typed in. Install the online version from
+<https://cash.marketkernel.com>: on Android, Chrome's ⋮ menu → Install app; on iOS, Share → Add
+to Home Screen. There is no sync between
 devices: to move the data, export it on one and import it on the other (Settings → Data).
 
 ## How it works
@@ -249,8 +251,16 @@ The release workflow stops if the tag and `package.json` disagree, then attaches
 ## GitHub Pages
 
 `.github/workflows/pages.yml` builds and tests every push to `main` and deploys `build/pages/`
-to GitHub Pages (Settings → Pages → Source: GitHub Actions). The data of the online version
-belongs to its address; a copy opened from disk has data of its own.
+to GitHub Pages (Settings → Pages → Source: GitHub Actions). It is served at
+<https://cash.marketkernel.com>: the domain is set in Settings → Pages → Custom domain, with
+Enforce HTTPS on — a service worker needs HTTPS. A workflow deploy needs no `CNAME` file. Every
+path in `build/pages/` is relative, so the same build works at a domain's root and under a
+project site's `/<repo>/` prefix.
+
+The data of the online version belongs to its address; a copy opened from disk has data of its
+own. The old address, `marketkernel.github.io/cashflow/`, now redirects to the domain, but its
+data stays where it was: whoever used it should export the data there first (an app installed
+from it keeps running offline) and import it at the new address.
 
 Each deploy changes the cache name in `sw.js`, so the browser picks up the new worker by itself
 — on a launch with a connection, every few hours while the app is open, or when Settings →

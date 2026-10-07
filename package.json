@@ -4,6 +4,7 @@
   "private": true,
   "description": "Personal finances without the bookkeeping \u2014 one standalone HTML file and a PWA",
   "license": "MIT",
+  "homepage": "https://cash.marketkernel.com",
   "type": "module",
   "engines": {
     "node": ">=20"
