@@ -1,0 +1,28 @@
+{
+  "name": "cashflow",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Personal finances without the bookkeeping \u2014 one standalone HTML file and a PWA",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "node tests/money.mjs && node tests/valuation.mjs && node tests/schedule.mjs && node tests/reconcile.mjs && node tests/forecast.mjs && node tests/state.mjs && node tests/db.mjs && node tests/pin.mjs && node tests/i18n.mjs",
+    "check": "npm run typecheck && npm test && npm run build && npm run test:browser",
+    "shots": "node tools/shots.mjs",
+    "test:browser": "node tests/app.mjs",
+    "i18n": "node tools/i18n.mjs"
+  },
+  "dependencies": {
+    "sql.js": "^1.14.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "typescript": "^5.9.3"
+  }
+}

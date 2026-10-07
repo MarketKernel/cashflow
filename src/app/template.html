@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<!-- viewport-fit=cover hands the notch and the home indicator to env(safe-area-inset-*);
+     resizes-content makes Chrome on Android shrink the page, not cover it, with the keyboard. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<!-- Nothing may leave the page: no fetch, no images or fonts from elsewhere, no
+     forms posting out. WebAssembly is allowed for SQLite, blob: for the export download. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Cashflow</title>
+<link rel="icon" href="__ICON__">
+<style>/*__STYLES__*/</style>
+</head>
+<body>
+<div id="app" class="app app--starting">
+  <header class="topbar">
+    <div class="brand"><img src="__ICON__" alt=""> <span>Cashflow</span></div>
+    <!-- On a phone this is the bar along the bottom of the screen. -->
+    <nav id="tabs" class="tabs" aria-label="Sections" data-i18n-attr="tabs">
+      <button type="button" class="tab" data-tab="accounts">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 15h2"/></svg>
+        <span data-i18n="tabs">Accounts</span>
+      </button>
+      <button type="button" class="tab" data-tab="recurring">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 9M20 4v5h-5M20 12a8 8 0 0 1-13.7 5.6L4 15M4 20v-5h5"/></svg>
+        <span data-i18n="tabs">Recurring</span>
+      </button>
+      <button type="button" class="tab" data-tab="oneoff">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <span data-i18n="tabs">One-off</span>
+      </button>
+      <button type="button" class="tab" data-tab="goals">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.8"/></svg>
+        <span data-i18n="tabs">Goals</span>
+      </button>
+      <button type="button" class="tab" data-tab="settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+        <span data-i18n="tabs">Settings</span>
+        <span id="update-dot" class="update-dot" hidden></span>
+      </button>
+    </nav>
+  </header>
+  <div id="notice" class="notice" hidden></div>
+  <main id="view" class="view" tabindex="-1"></main>
+</div>
+<p id="starting" class="starting" data-i18n="app">Opening the database…</p>
+<script>/*__APP__*/</script>
+</body>
+</html>
