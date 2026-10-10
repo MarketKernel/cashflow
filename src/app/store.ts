@@ -6,7 +6,8 @@
  * the whole state is written to SQLite in one transaction and the database's
  * bytes to IndexedDB in one put.
  *
- * Two windows of the app (a tab and the installed PWA) share the record. Each
+ * Two windows of the app (a tab and the installed PWA) on the same database
+ * share its record. Each
  * save raises a revision kept in the database; before writing, a window looks
  * at the stored one, under a lock so two saves cannot cross. A revision other
  * than the one it loaded means another window saved since: this one takes
@@ -17,7 +18,7 @@ import type { Database, SqlJsStatic } from 'sql.js';
 import { isEmpty, openDatabase, readState, revision, writeState } from '../core/db';
 import { loadSqlite } from '../core/sqlite';
 import { type State, emptyState } from '../core/state';
-import { keepData, loadBytes, openStorage, saveBytes, saveRecord, storageAvailable } from './storage';
+import { currentDatabase, keepData, listed, loadBytes, saveBytes, saveRecord, storageAvailable } from './storage';
 
 let SQL: SqlJsStatic;
 let db: Database;
@@ -44,6 +45,8 @@ const channel = typeof BroadcastChannel === 'undefined' ? null : (() => {
 })();
 
 export const getState = (): State => state;
+/** What a save tells the other windows: those on another database let it pass. */
+const saved = (): string => `saved:${currentDatabase()}`;
 
 export interface Boot {
   /** Nothing stored yet: the first start. */
@@ -54,9 +57,9 @@ export interface Boot {
   unreadable: boolean;
 }
 
-export async function boot(defaultBase: string): Promise<Boot> {
+/** Opens the database storage.ts was told to use (useDatabase); openStorage() has run, and said `persistent`. */
+export async function boot(defaultBase: string, persistent: boolean): Promise<Boot> {
   SQL = await loadSqlite();
-  const persistent = await openStorage();
   let bytes: Uint8Array | null = null;
   let unreadable = false;
   try {
@@ -78,7 +81,7 @@ export async function boot(defaultBase: string): Promise<Boot> {
   const fresh = isEmpty(db);
   state = fresh ? emptyState(defaultBase, Date.now()) : readState(db, Date.now());
   channel?.addEventListener('message', (event) => {
-    if (event.data === 'saved' && !pending) void reloadFromStorage();
+    if (event.data === saved() && !pending) void reloadFromStorage();
   });
   return { fresh, persistent, unreadable };
 }
@@ -118,8 +121,11 @@ async function reloadFromStorage(): Promise<void> {
   else next?.db.close();
 }
 
-/** Runs `work` alone across this origin's windows, where the browser has Web Locks. */
-function exclusive(work: () => Promise<void>): Promise<void> {
+/**
+ * Runs `work` alone across this origin's windows, where the browser has Web
+ * Locks: saves, and deleting a database, which must not cross a save into it.
+ */
+export function exclusive(work: () => Promise<void>): Promise<void> {
   if (!('locks' in navigator) || !navigator.locks) return work();
   // The lock is held until the promise `work` returns has settled.
   return navigator.locks.request('cashflow-save', () => work()) as unknown as Promise<void>;
@@ -171,6 +177,8 @@ export function flush(): Promise<void> {
     try {
       const persistent = storageAvailable() && !blocked;
       if (persistent) {
+        // Deleted in another window: this one is about to reload, and writing would bring the database back.
+        if (!(await listed(currentDatabase()))) return;
         const newer = await storedIfNewer();
         if (newer) {
           adopt(newer);
@@ -183,7 +191,7 @@ export function flush(): Promise<void> {
       if (persistent) {
         await saveBytes(db.export());
         keepData();
-        channel?.postMessage('saved');
+        channel?.postMessage(saved());
       }
       lastSaved = true;
       for (const listener of savedListeners) listener(snapshot);
@@ -195,6 +203,12 @@ export function flush(): Promise<void> {
 }
 
 export const hasPendingSave = (): boolean => pending;
+
+/** What is waiting is let go: the database is gone, and the page reloads. */
+export function dropPending(): void {
+  window.clearTimeout(timer);
+  pending = false;
+}
 
 /** The database file as it is after the last save: an export of the .sqlite. */
 export async function sqliteBytes(): Promise<Uint8Array> {
@@ -208,6 +222,17 @@ export function stateFromSqlite(bytes: Uint8Array): State {
   const other = openDatabase(SQL, bytes);
   try {
     return readState(other, Date.now());
+  } finally {
+    other.close();
+  }
+}
+
+/** A state as the bytes of a database of its own: an import that becomes a new database. */
+export function sqliteOf(next: State): Uint8Array {
+  const other = openDatabase(SQL);
+  try {
+    writeState(other, next, 1);
+    return other.export();
   } finally {
     other.close();
   }

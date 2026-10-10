@@ -79,12 +79,14 @@
     "Unaccounted money shows after the second reconciliation.": "第二次对账后才会显示未记录资金。",
     "Expected now": "当前预计",
     "{diff} since the reconciliation": "自对账以来{diff}",
-    "No pace of unaccounted money yet: the forecast leaves it out until two reconciliations.": "尚无未记录资金的速度：在完成两次对账之前，预测不会计入它。",
-    "The pace of unaccounted money, {amount} a day, is left out of the forecast (Settings).": "未记录资金的速度（每天{amount}）未被计入预测（见设置）。",
     "Unaccounted income, {amount} a day, is not counted on in the forecast.": "未记录的收入（每天{amount}）不计入预测。",
-    "The forecast counts on {amount} a day unaccounted, the average of {count} intervals.": {
-      "other": "预测按每天{amount}未记录计算，为{count}个区间的平均值。"
+    "Unaccounted on average: {day} a day, {month} a month ({count} intervals).": {
+      "other": "未记录平均每天{day}，每月{month}（{count}个区间）。"
     },
+    "The forecast does not count on it: it may have been a one-off. If it repeats, add it as a recurring expense and the forecast will plan for it.": "预测不会计入它：这可能只是一次性情况。如果它重复出现，请将其添加为一笔定期支出，预测就会将它纳入计划。",
+    "Unaccounted spending": "未记录支出",
+    "Add as a recurring expense": "添加为定期支出",
+    "Spending outside the accounts is planned as a recurring expense: the next reconciliation shows what goes unaccounted beyond it.": "账户之外的支出以一笔定期支出的形式计划：下一次对账将显示超出这部分之外的未记录金额。",
     "Report": "报告"
   },
   "history": {
@@ -140,6 +142,21 @@
   "backup": {
     "Exported": "已导出",
     "This is not a Cashflow file": "这不是 Cashflow 文件",
+    "Password": "密码",
+    "The password again": "确认密码",
+    "At least {count} characters": {
+      "other": "至少{count}个字符"
+    },
+    "The two passwords differ": "两次输入的密码不一致",
+    "Export encrypted": "导出加密文件",
+    "The SQLite file, encrypted with a password (AES-256). Without the password nobody can open it, Cashflow included: a forgotten password cannot be recovered.": "用密码加密的SQLite文件（AES-256）。没有密码任何人都无法打开它，包括Cashflow在内：忘记的密码无法找回。",
+    "Export": "导出",
+    "The file could not be written": "文件无法写入",
+    "An encrypted file": "加密文件",
+    "The file is encrypted. Type its password to import it.": "该文件已加密。输入其密码以导入。",
+    "Wrong password, or the file is damaged": "密码错误，或文件已损坏",
+    "This browser cannot open encrypted files": "此浏览器无法打开加密文件",
+    "The file was encrypted by a newer version of Cashflow: open it there, or update this one": "该文件是由更新版本的 Cashflow 加密的：请在那边打开它，或更新这边的版本",
     "{count} accounts": {
       "other": "{count}个账户"
     },
@@ -149,14 +166,16 @@
     "{count} reconciliations": {
       "other": "{count}次对账记录"
     },
-    "Replace everything?": "替换全部数据？",
-    "{file}: {summary}. Everything here now is replaced by it.": "{file}：{summary}。当前的所有数据都将被它替换。",
+    "Import the file": "导入文件",
+    "{file}: {summary}. It can replace everything in this database, or become a new database beside it.": "{file}：{summary}。它可以替换此数据库中的全部内容，也可以成为它旁边的一个新数据库。",
+    "As a new database": "作为新数据库",
     "Replace everything": "替换全部数据",
     "Imported": "已导入",
-    "Every change is now copied to {file}": "此后每次更改都会复制到{file}",
-    "Create a new database?": "创建新数据库？",
-    "Everything here is deleted for good: accounts, operations, reconciliations and goals. Export the data first if it may be needed.": "这里的一切都将被永久删除：账户、操作、对账和目标。如果可能还需要这些数据，请先导出。",
-    "Delete and create": "删除并创建"
+    "Delete this database?": "删除此数据库？",
+    "Everything here is deleted for good: accounts, operations, reconciliations and goals. A new, empty database takes its place. Export the data first if it may be needed.": "这里的一切都将被永久删除：账户、操作、对账记录和目标。一个新的空数据库将取代它。如果以后可能需要这些数据，请先导出。",
+    "{name} is deleted for good: its accounts, operations, reconciliations and goals. Export the data first if it may be needed.": "{name}将被永久删除：其账户、操作、对账记录和目标。如果以后可能需要这些数据，请先导出。",
+    "Delete": "删除",
+    "Every change is now copied to {file}": "此后每次更改都会复制到{file}"
   },
   "time": {
     "today": "今天",
@@ -171,8 +190,8 @@
     "Not within the forecast horizon": "超出预测范围",
     "The forecast starts with the first reconciliation": "预测从第一次对账开始",
     "Can buy on {date}": "{date}可以买",
-    "Move up": "上移",
-    "Move down": "下移",
+    "Drag to change the order": "拖动以调整顺序",
+    "Priority {number}: drag, or move with the arrow keys": "优先级{number}：拖动，或用方向键移动",
     "Edit": "编辑",
     "Needed": "所需",
     "Have now": "当前拥有",
@@ -181,7 +200,9 @@
     "Bought": "已购买",
     "Goals": "目标",
     "Goal": "目标",
-    "Each goal is measured against the same personal money: buying one is not taken out of another.": "每个目标都基于同一份个人资金来衡量：购买一个目标不会从另一个目标中扣除。",
+    "After the goals above, which take {amount}": "在上面的目标之后，它们占用{amount}",
+    "Waits for {name}": "等待{name}",
+    "Goals are bought from the top down: each counts on the money the ones above it leave. Drag a goal to change the order.": "目标按从上到下的顺序购买：每个目标都依赖于它前面的目标所剩下的资金。拖动目标可调整顺序。",
     "Something to buy? Add it, with how much should be left over, and the forecast tells you when.": "想买点什么？把它添加进来，连同希望留下的余额，预测会告诉你何时能买。",
     "Reached ({count})": "已达成（{count}）",
     "Delete": "删除",
@@ -236,12 +257,27 @@
     "no account": "无账户",
     "Planned for {date}": "计划于{date}",
     "Saved": "已保存",
+    "Saved, outside the period shown": "已保存，不在显示的区间内",
     "One-off": "单次",
-    "Save": "保存",
+    "Operation": "操作",
     "Planned": "已计划",
     "Done": "已完成",
     "Nothing yet. Add what the regular operations do not cover: a purchase, a bonus, a transfer.": "暂时还没有。添加定期操作无法覆盖的内容：一笔购物、一笔奖金、一次转账。",
+    "Nothing in this period.": "此区间内没有任何操作。",
+    "Period": "区间",
+    "Not reconciled yet: since {date}": "尚未对账：自{date}起",
+    "Not reconciled yet": "尚未对账",
+    "Between reconciliations": "对账之间",
+    "Before {date}": "{date}之前",
+    "All operations": "所有操作",
+    "Dates…": "日期…",
+    "From": "从",
+    "To": "到",
+    "{count} operations:": {
+      "other": "{count}项操作："
+    },
     "One-off operation": "单次操作",
+    "New one-off operation": "新建单次操作",
     "Delete": "删除",
     "Delete this operation?": "删除这项操作？",
     "It is removed from the records.": "它将从记录中删除。",
@@ -355,8 +391,8 @@
     "Totals are shown in": "总额以此显示：",
     "Add a currency below to pick it here.": "请先在下方添加一种货币，才能在此选择。",
     "Forecast": "预测",
-    "Count on unaccounted spending at its average pace": "按平均速度计入未记录支出",
     "Averaging window": "平均窗口期",
+    "For the pace of unaccounted money in the report.": "用于报告中未记录资金的速度。",
     "days": "天",
     "Horizon": "预测范围",
     "years": "年",
@@ -386,8 +422,8 @@
     },
     "Export JSON": "导出 JSON",
     "Export SQLite": "导出 SQLite",
+    "Export encrypted…": "导出加密文件…",
     "Import…": "导入…",
-    "New database…": "新数据库…",
     "Settings": "设置"
   },
   "update": {
@@ -415,9 +451,13 @@
     "Wrong PIN": "PIN码错误",
     "Wrong PIN. Try again in {time}.": "PIN码错误，请在{time}后重试。",
     "Forgot the PIN?": "忘记PIN码？",
+    "Another database": "其他数据库",
     "Start a new database?": "创建新数据库？",
     "Without the PIN this database cannot be opened. A new, empty one takes its place: everything in this one is deleted for good.": "没有PIN码将无法打开此数据库。将创建一个新的空数据库来代替它：此数据库中的一切都将被永久删除。",
     "Delete and start anew": "删除并重新开始",
+    "The name of the database": "数据库名称",
+    "To delete it, type its name: {name}": "要删除它，请输入它的名称：{name}",
+    "The name does not match": "名称不匹配",
     "Current PIN": "当前PIN码",
     "New PIN": "新PIN码",
     "The PIN again": "确认PIN码",
@@ -440,5 +480,26 @@
     "The PIN of the file": "文件的PIN码",
     "The file is protected by a PIN of its own. Type it to import the file; it then becomes the PIN here.": "该文件受自己的PIN码保护。输入它以导入文件；此后它将成为这里的PIN码。",
     "Import": "导入"
+  },
+  "databases": {
+    "Main": "主数据库",
+    "Type a name": "输入名称",
+    "There is already a database with this name": "已存在同名的数据库",
+    "Imported": "导入的数据库",
+    "Name": "名称",
+    "Create": "创建",
+    "Choose a database": "选择数据库",
+    "New database": "新建数据库",
+    "Database": "数据库",
+    "Databases": "数据库",
+    "Each database has its own accounts, operations, goals and PIN. With more than one, the app asks which to open when it starts.": "每个数据库都有自己的账户、操作、目标和PIN码。多于一个时，应用启动时会询问打开哪一个。",
+    "open": "已打开",
+    "Rename the database": "重命名数据库",
+    "Save": "保存",
+    "Rename…": "重命名…",
+    "Open": "打开",
+    "New database…": "新建数据库…",
+    "Choose another database": "选择其他数据库",
+    "Delete this database…": "删除此数据库…"
   }
 }

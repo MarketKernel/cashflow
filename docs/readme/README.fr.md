@@ -52,8 +52,8 @@ La même page est aussi une PWA installable, qui s'exécute dans sa propre fenê
    carte — quotidien, hebdomadaire, mensuel ou annuel. Dans **Ponctuel**, ajoutez ce que les
    opérations régulières ne couvrent pas : un achat, une prime, des vacances prévues.
 6. Toutes les une ou deux semaines, rapprochez à nouveau. Le rapport indique ce qui n'a pas été
-   comptabilisé et combien de temps l'argent va durer, et les objectifs dans **Objectifs**
-   disent quand ils pourront être achetés.
+   comptabilisé (et propose d'en tenir compte si cela se reproduit), combien de temps l'argent
+   va durer, et les objectifs dans **Objectifs** disent quand ils pourront être achetés.
 
 ### Sur un téléphone
 
@@ -92,14 +92,22 @@ autre compte, ou dépensé), pour que rien ne reste non comptabilisé non plus.
 
 La prévision part du dernier rapprochement et ajoute chaque opération depuis — c'est
 « attendu maintenant ». De là, elle avance jour par jour jusqu'à l'horizon (cinq ans par
-défaut) : les opérations récurrentes, les opérations ponctuelles prévues et, sauf désactivation,
-le rythme moyen des dépenses non comptabilisées (l'argent non comptabilisé des rapprochements
-des 90 derniers jours, réparti sur leurs jours). Les revenus non comptabilisés ne sont pas pris
-en compte. « L'argent dure jusqu'au » est le premier moment où l'argent sur les comptes atteint
+défaut) : les opérations récurrentes et les opérations ponctuelles prévues, rien d'autre.
+« L'argent dure jusqu'au » est le premier moment où l'argent sur les comptes atteint
 zéro ; si l'argent personnel (les comptes moins les dettes) passe sous zéro plus tôt, cette date
 vient en second. Si ni l'un ni l'autre ne se produit dans l'horizon, le rapport dit que l'argent
-dure plus longtemps — ou, s'il augmente, de combien par mois. La date d'un objectif est le
-premier moment où la prévision atteint son seuil.
+dure plus longtemps — ou, s'il augmente, de combien par mois. Les objectifs sont achetés dans
+leur ordre, le premier de la liste en premier : la date d'un objectif est le premier moment,
+jamais avant celui de l'objectif au-dessus, où la prévision atteint son seuil plus les prix des
+objectifs au-dessus.
+
+L'argent non comptabilisé n'est pas prévu de lui-même : un portefeuille perdu ou une réparation
+ponctuelle ne doit pas appauvrir tous les mois à venir. Le rapport montre à la place son rythme
+moyen — l'argent non comptabilisé des rapprochements des 90 jours précédant le dernier, réparti
+sur leurs jours — et, pour les dépenses, propose de l'ajouter comme une dépense récurrente
+quotidienne sans compte. Une fois ajoutée, la prévision en tient compte comme de n'importe
+quelle autre opération, et les rapprochements suivants ne montrent plus que ce qui reste non
+comptabilisé au-delà. Les revenus non comptabilisés ne sont pas pris en compte.
 
 ### Les frais, et pourquoi le frais d'une dette l'agrandit
 
@@ -136,22 +144,32 @@ remboursement lui-même comme un virement vers la dette.
   dans un mois plus court est son dernier jour, et le 29 février d'une année non bissextile est
   le 28. Les heures sont locales, de sorte qu'une opération quotidienne à 09:00 reste à 09:00
   même au passage à l'heure d'été ou d'hiver.
-- Opérations ponctuelles avec un formulaire rapide : le curseur dans le champ du montant,
-  Entrée enregistre, le dernier compte utilisé.
+- Opérations ponctuelles dans un formulaire derrière un bouton (ou <kbd>N</kbd>) : le curseur
+  dans le champ du montant, Entrée enregistre, le dernier compte utilisé. La liste s'ouvre sur ce
+  que le prochain rapprochement prend en compte ; un filtre affiche l'intervalle entre deux
+  rapprochements passés, tout, ou des dates de–à, avec le total des opérations affichées.
 - Virements entre comptes en devises différentes, avec le montant crédité ; un virement vers
   une dette la rembourse.
 - Le graphique de prévision sur une semaine, un mois, 3 ou 6 mois ou un an : argent personnel,
   argent sur les comptes, la ligne zéro et les objectifs ; un réticule avec les valeurs, et les
   mêmes chiffres sous forme de tableau.
 - Objectifs achetés « avec de l'argent de reste » (argent personnel au moins égal au prix plus
-  une marge) ou « en proportion » (le prix au plus une part de l'argent personnel) ; Acheté
+  une marge) ou « en proportion » (le prix au plus une part de l'argent personnel), dans une
+  liste par priorité : faites glisser un objectif plus haut pour l'acheter plus tôt. Acheté
   enregistre la dépense.
 - Un rapprochement passé ouvre l'onglet Comptes tel qu'il était, avec ce qui était attendu et ce
   qui a été trouvé, et ce qui a été enregistré sur la période.
-- Export et import en JSON ou sous forme du fichier SQLite lui-même ; dans Chrome et Edge, une
+- Export et import en JSON ou sous forme du fichier SQLite lui-même, ce dernier pouvant aussi
+  être chiffré avec un mot de passe pour une copie conservée ailleurs ; dans Chrome et Edge, une
   copie automatique écrite dans un fichier de votre choix après chaque modification.
-- « Nouvelle base de données… » dans Paramètres : tout est remplacé par une base de données
-  vide, après un avertissement qui propose un export et, si un code PIN existe, le demande.
+- Plusieurs bases de données dans un même navigateur — pour la famille et pour une entreprise,
+  par exemple — chacune avec ses propres comptes, objectifs et code PIN. S'il y en a plusieurs,
+  l'application s'ouvre sur leur liste, et le nom de celle qui est ouverte apparaît dans la barre
+  du haut (un clic ramène à la liste). Un fichier importé remplace la base de données ouverte ou
+  devient une nouvelle base à côté d'elle.
+- « Supprimer cette base de données… » dans Paramètres, après un avertissement qui propose un
+  export et, si un code PIN existe, le demande ; la seule base de données cède la place à une
+  nouvelle, vide.
 - Un code PIN à quatre chiffres pour la base de données, demandé à sa création : la page
   n'affiche rien tant qu'il n'est pas saisi, et chaque code erroné double la pause avant le
   prochain essai, d'une seconde jusqu'à une heure.
@@ -163,7 +181,7 @@ remboursement lui-même comme un virement vers la dette.
 | Touche | Action |
 | --- | --- |
 | <kbd>R</kbd> | Rapprocher |
-| <kbd>N</kbd> | Un nouveau compte, une nouvelle opération récurrente ou un nouvel objectif sur l'onglet ouvert ; le montant du formulaire rapide dans Ponctuel |
+| <kbd>N</kbd> | Un nouveau compte, une nouvelle opération récurrente ou ponctuelle, ou un nouvel objectif sur l'onglet ouvert |
 | <kbd>Entrée</kbd> | Dans un formulaire : le champ suivant ; dans le dernier, enregistre |
 | <kbd>Échap</kbd> | Ferme la boîte de dialogue |
 
@@ -175,10 +193,12 @@ Sur un écran tactile, les indications de touches ne sont pas affichées.
   `default-src 'none'` et `connect-src 'none'` ; WebAssembly est autorisé pour SQLite
   (`'wasm-unsafe-eval'`), `blob:` pour le téléchargement de l'export. Le build s'arrête sur tout
   `src` ou `href` externe, et la CI vérifie à nouveau.
-- Les données vivent dans l'IndexedDB de ce navigateur : un enregistrement contenant les octets
-  de la base SQLite, réécrit en entier après chaque modification, de sorte qu'une sauvegarde
-  n'est jamais à moitié faite. `localStorage` ne contient que la langue, le thème, l'onglet
-  ouvert, les groupes repliés, la période du graphique et la pause après un code PIN erroné.
+- Les données vivent dans l'IndexedDB de ce navigateur : un enregistrement par base de données
+  contenant ses octets SQLite, réécrit en entier après chaque modification, de sorte qu'une
+  sauvegarde n'est jamais à moitié faite, et un autre avec la liste des bases de données.
+  `localStorage` ne contient que la langue, le thème, l'onglet ouvert, les groupes repliés, la
+  période du graphique et la pause après un code PIN erroné ; `sessionStorage`, quelle base de
+  données l'onglet a ouverte.
 - Lire la base ou un fichier importé vérifie chaque champ : une valeur corrompue est remplacée
   par sa valeur par défaut plutôt que d'arrêter l'appli.
 - Après la première sauvegarde, l'appli demande au navigateur de conserver son espace de
@@ -188,7 +208,15 @@ Sur un écran tactile, les indications de touches ne sont pas affichées.
   fichiers du navigateur : les données ne sont pas chiffrées. Seul son hash est stocké (PBKDF2
   avec un sel), parmi les paramètres de la base de données, de sorte qu'un export l'emporte avec
   lui et demande le même code PIN partout où il est importé. Un code PIN oublié ne peut pas être
-  récupéré : « Code PIN oublié ? » supprime la base de données et en démarre une nouvelle, vide.
+  récupéré : « Code PIN oublié ? » supprime la base de données et en démarre une nouvelle, vide —
+  seulement une fois le nom de la base de données tapé, pour qu'un enfant qui appuie sur les
+  boutons ne l'efface pas.
+- Pour une copie conservée dans un dossier cloud ou sur une clé, « Exporter en chiffré… » écrit
+  le fichier SQLite chiffré avec un mot de passe d'au moins 8 caractères : AES-256-GCM avec une
+  clé dérivée par PBKDF2-SHA-256 (600 000 itérations, un sel aléatoire). Sans le mot de passe,
+  personne ne peut ouvrir le fichier — Cashflow compris — et un mot de passe oublié ne peut pas
+  être récupéré. L'importer demande le mot de passe. Les données dans le navigateur restent
+  telles quelles, derrière le code PIN.
 
 ## Traductions
 
@@ -302,8 +330,9 @@ src/core/             aucun DOM : les tests l'exécutent dans Node
   flows.ts            les opérations comme mouvements d'argent entre comptes et devises
   reconcile.ts        soldes attendus et réels, l'instantané, l'argent non comptabilisé et son rythme
   forecast.ts         la courbe à venir, quand l'argent s'épuise, quand un seuil est atteint
-  goals.ts            le seuil, la progression et la date d'un objectif
+  goals.ts            le seuil, la progression et la date d'un objectif, par ordre de priorité
   pin.ts              le code PIN de la base de données : son hash salé, sa vérification, la pause après les essais erronés
+  encryption.ts       un export chiffré avec un mot de passe : AES-256-GCM, la clé issue de PBKDF2
   state.ts            les types de l'état, la vérification de ce qui est lu, les migrations d'anciens documents
   db.ts               l'état dans SQLite : le schéma et ses migrations, une transaction par sauvegarde
   sqlite.ts           sql.js avec son WebAssembly intégré
@@ -313,19 +342,20 @@ src/app/              la page : le fichier unique et la PWA
   styles.css          palette, thèmes clair et sombre, la mise en page téléphone
   main.ts             démarrage, onglets, dessin, raccourcis
   store.ts            l'état en mémoire, sauvegardé dans SQLite et IndexedDB peu après chaque changement
-  storage.ts          IndexedDB : les octets de la base, le descripteur de fichier de la copie automatique ; persist()
+  storage.ts          IndexedDB : les octets de chaque base et le descripteur de fichier de la copie automatique, leur liste ; persist()
+  databases.ts        plusieurs bases de données : leur liste, le choix à l'entrée, le changement, la carte dans Paramètres
   lock.ts             l'écran demandant le code PIN, la question d'une nouvelle base de données, sa carte dans Paramètres
   prefs.ts            localStorage : langue, thème, onglet, groupes repliés, période du graphique
   accounts.ts         l'onglet Comptes, le rapport, l'historique, un rapprochement passé
   account-dialog.ts   créer, modifier, archiver et supprimer des comptes et des dettes
   reconcile-form.ts   le formulaire de rapprochement
   recurring.ts        l'onglet Récurrent et son formulaire ; versions des opérations
-  oneoff.ts           l'onglet Ponctuel et son formulaire rapide
+  oneoff.ts           l'onglet Ponctuel, son filtre par période et son formulaire
   op-fields.ts        les champs communs aux opérations : type, montant, compte ou devise, virement
-  goals.ts            l'onglet Objectifs, Acheté
+  goals.ts            l'onglet Objectifs : la liste par priorité, le glisser-déposer, Acheté
   chart.ts            le graphique de prévision, en SVG écrit à la main
-  settings.ts         l'onglet Paramètres : devises et taux, prévision, langue, thème, données, code PIN
-  backup.ts           export et import (JSON et SQLite), la copie automatique
+  settings.ts         l'onglet Paramètres : devises et taux, prévision, langue, thème, données, bases de données, code PIN
+  backup.ts           export et import (JSON, SQLite, chiffré), suppression d'une base de données, la copie automatique
   update.ts           les mises à jour de la PWA
   ui.ts, dom.ts       boîtes de dialogue, toasts, champs ; construction du DOM
   format.ts, inputs.ts  montants et dates dans la langue de l'interface ; le champ de montant
@@ -349,7 +379,8 @@ build/                le résultat du build ; build/pages/ est la PWA pour GitHu
   navigation privée non — la page le signale alors en haut et fonctionne uniquement en mémoire :
   exportez les données, ou utilisez l'appli installée.
 - Les intérêts des prêts ne sont pas modélisés ; c'est une dépense récurrente que vous ajoutez.
-- Chaque objectif est mesuré indépendamment : acheter l'un ne se déduit pas des autres.
+- Les objectifs sont achetés l'un après l'autre, dans leur ordre : un objectif bon marché plus
+  bas dans la liste attend ceux qui le précèdent, même s'il pourrait être acheté dès maintenant.
 
 ## Licence
 

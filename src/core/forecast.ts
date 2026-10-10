@@ -3,18 +3,19 @@
  * reconciliation through now to the horizon.
  *
  * It starts where the reconciliation form would: the last reconciled balances,
- * the opening balances of accounts created since, every movement since — and,
- * when the setting is on, the average pace of unaccounted spending for the
- * days since. That is "expected now". From there it goes on with the recurring
- * operations, the planned one-offs and the same pace of unaccounted spending.
+ * the opening balances of accounts created since, every movement since. That
+ * is "expected now". From there it goes on with the recurring operations and
+ * the planned one-offs — nothing else. Unaccounted money is not projected: it
+ * may have been a one-off loss, and only the person knows. The report shows
+ * its pace and offers to add it as a recurring expense, and then it is planned
+ * like any other.
  *
  * Values are linear in the balances, so each movement adds its own worth to
  * running totals: no full revaluation per step, five years of a daily
  * operation are a few thousand additions.
  */
 import { flowsBetween } from './flows';
-import { expect, lastReconciliation, unaccountedRate, type UnaccountedRate } from './reconcile';
-import { DAY } from './schedule';
+import { expect, lastReconciliation } from './reconcile';
 import { type Kind, type State, decimalsOf } from './state';
 import { rateOf, signed, unitValue } from './valuation';
 
@@ -42,9 +43,6 @@ export interface Forecast {
   personalZero: number | null;
   /** The average change of personal money a month, over the horizon. */
   perMonth: number;
-  rate: UnaccountedRate;
-  /** The pace of unaccounted money the forecast uses, per day; 0 when it is left out. */
-  pace: number;
 }
 
 interface Holder {
@@ -89,11 +87,7 @@ export function forecast(state: State, now: number): Forecast | null {
   for (const [id, balance] of expectation.accounts) move(id, '', balance);
   for (const flow of expectation.flows) if (flow.accountId === undefined) move(undefined, flow.currency, flow.amount);
 
-  const rate = unaccountedRate(state, now);
-  // Unaccounted spending is projected; unaccounted income is not counted on.
-  const pace = state.forecast.includeUnaccounted ? Math.min(rate.perDay, 0) : 0;
-  const drift = (at: number): number => (pace * (at - last.at)) / DAY;
-  const sample = (at: number): Sample => ({ at, assets: assets + drift(at), personal: assets - debts + drift(at) });
+  const sample = (at: number): Sample => ({ at, assets, personal: assets - debts });
 
   let assetsZero: number | null = null;
   let personalZero: number | null = null;
@@ -138,14 +132,12 @@ export function forecast(state: State, now: number): Forecast | null {
     assetsZero,
     personalZero,
     perMonth: (points.at(-1)!.personal - current.personal) / months,
-    rate,
-    pace,
   };
 }
 
 /** The first moment personal money is at least `threshold`; null if not before the horizon. */
-export function firstReaching(f: Forecast, threshold: number): number | null {
-  for (const s of f.samples) if (s.personal >= threshold) return s.at;
+export function firstReaching(f: Forecast, threshold: number, from = f.now): number | null {
+  for (const s of f.samples) if (s.at >= from && s.personal >= threshold) return s.at;
   return null;
 }
 
@@ -154,8 +146,8 @@ export const samplesBetween = (f: Forecast, from: number, to: number): Sample[] 
 
 /**
  * The last reconciliation's balances at today's rates and fees: "expected now"
- * minus this is what the operations and the pace changed since, without the
- * exchange rates' doing.
+ * minus this is what the operations changed since, without the exchange
+ * rates' doing.
  */
 export function reconciledNow(state: State): number | null {
   const last = lastReconciliation(state);

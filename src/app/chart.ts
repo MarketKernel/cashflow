@@ -1,7 +1,7 @@
 /**
  * The forecast chart, SVG by hand: personal money (the main line) and the
  * money on the accounts, from now to now + the chosen period, with the zero
- * line and the thresholds of the open goals.
+ * line and the open goals: where personal money must be for each, in their order.
  *
  * Money changes in steps — a payment happens at a moment — so the lines are
  * drawn as steps, one at every sample the forecast took. A crosshair follows
@@ -13,7 +13,7 @@
  */
 import { t } from '../core/i18n';
 import { type Forecast, type Sample, samplesBetween } from '../core/forecast';
-import { threshold } from '../core/goals';
+import { goalPlan } from '../core/goals';
 import type { State } from '../core/state';
 import { fill, h, s } from './dom';
 import { date, inBase, localeTag, shortDate } from './format';
@@ -56,7 +56,13 @@ export function renderChart(state: State, f: Forecast, period: Period): HTMLElem
     { label: t('chart', 'Personal money'), key: 'personal', cls: 'series-1' },
     { label: t('chart', 'Money on accounts'), key: 'assets', cls: 'series-2' },
   ];
-  const goals = state.goals.filter((g) => g.doneAt === undefined).map((g) => ({ name: g.name, value: threshold(state, g) }));
+  // A goal's line is where personal money must be with the goals above it bought too, and never below
+  // their lines: it is not bought before them.
+  let floor = -Infinity;
+  const goals = goalPlan(state, f).map(({ goal, status }) => {
+    floor = Math.max(floor, status.threshold + status.ahead);
+    return { name: goal.name, value: floor };
+  });
 
   // Time runs left to right in every language.
   const plot = h('div', { class: 'chart-plot', dir: 'ltr' });

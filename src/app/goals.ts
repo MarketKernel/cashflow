@@ -1,12 +1,13 @@
 /**
  * The Goals tab: what to buy, and when the forecast says it can be bought.
- * Each goal is measured on its own against the same personal money; "Bought"
- * records the purchase as a one-off expense and moves the goal to the reached
- * ones, folded at the bottom.
+ * The goals are a list in order of priority: the top one is bought first, and
+ * each below counts on what the ones above leave. "Bought" records the
+ * purchase as a one-off expense and moves the goal to the reached ones,
+ * folded at the bottom.
  */
 import { t } from '../core/i18n';
 import { forecast } from '../core/forecast';
-import { goalStatus, sortedGoals } from '../core/goals';
+import { goalPlan, sortedGoals } from '../core/goals';
 import { formatInput } from '../core/money';
 import { type Goal, type GoalRule, type State, accountOf, activeAccounts, decimalsOf, newId } from '../core/state';
 import { convert } from '../core/valuation';
@@ -36,45 +37,155 @@ function move(goal: Goal, by: -1 | 1): void {
   });
 }
 
+const idsOf = (list: HTMLElement): string[] => Array.from(list.children, (c) => (c as HTMLElement).dataset.id ?? '');
+
+/** A drag going on: one at a time, whatever the number of fingers. */
+let dragging = false;
+
+/**
+ * A card dragged by its handle moves among the others as the pointer goes;
+ * the order is saved when it is let go. Pointer events, so a finger drags as
+ * well as a mouse; the arrow keys on the handle do the same from the keyboard.
+ * The pointer is captured by the list, which stays put while its cards move;
+ * a render in the middle (a save from another window) takes the list out of
+ * the page, and the drag ends there with nothing saved.
+ */
+function draggable(list: HTMLElement, card: HTMLElement, handle: HTMLElement): void {
+  handle.addEventListener('pointerdown', (start) => {
+    if (dragging || !start.isPrimary || start.button !== 0) return;
+    start.preventDefault();
+    dragging = true;
+    list.setPointerCapture(start.pointerId);
+    const before = idsOf(list);
+    const grab = start.clientY - card.getBoundingClientRect().top;
+    let y = start.clientY;
+    card.classList.add('goal--dragging');
+
+    const place = (): void => {
+      card.style.transform = '';
+      // Before the first card whose middle is below the pointer; the dragged one is left out, so this does not flip back and forth.
+      const next = Array.from(list.children).find((c) => {
+        if (c === card) return false;
+        const r = c.getBoundingClientRect();
+        return y < r.top + r.height / 2;
+      });
+      if (next) {
+        if (card.nextElementSibling !== next) list.insertBefore(card, next);
+      } else if (list.lastElementChild !== card) list.append(card);
+      card.style.transform = `translateY(${y - grab - card.getBoundingClientRect().top}px)`;
+    };
+    // Near the top bar or the tab bar the page scrolls, a frame at a time, while the pointer stays there.
+    let frame = 0;
+    const scroll = (): void => {
+      // A list taken out of the page may not hear that it lost the pointer: the event goes to the document then.
+      if (!list.isConnected) return stop();
+      const top = (document.querySelector('.topbar')?.getBoundingClientRect().bottom ?? 0) + 40;
+      const tabs = document.getElementById('tabs')?.getBoundingClientRect();
+      const bottom = (tabs && tabs.top > window.innerHeight / 2 ? tabs.top : window.innerHeight) - 40;
+      const by = y < top ? -Math.min(16, top - y) : y > bottom ? Math.min(16, y - bottom) : 0;
+      if (by) {
+        window.scrollBy(0, by);
+        place();
+      }
+      frame = requestAnimationFrame(scroll);
+    };
+    frame = requestAnimationFrame(scroll);
+
+    const follow = (e: PointerEvent): void => {
+      if (e.pointerId !== start.pointerId) return;
+      y = e.clientY;
+      place();
+    };
+    const stop = (): void => {
+      cancelAnimationFrame(frame);
+      list.removeEventListener('pointermove', follow);
+      list.removeEventListener('pointerup', finish);
+      list.removeEventListener('pointercancel', finish);
+      list.removeEventListener('lostpointercapture', finish);
+      dragging = false;
+      card.classList.remove('goal--dragging');
+      card.style.transform = '';
+    };
+    const finish = (e: PointerEvent): void => {
+      if (e.pointerId !== start.pointerId) return;
+      stop();
+      if (!list.isConnected) return;
+      if (e.type !== 'pointerup') {
+        for (const id of before) list.append(list.querySelector(`[data-id="${CSS.escape(id)}"]`)!);
+        return;
+      }
+      const after = idsOf(list);
+      if (after.join() === before.join()) return;
+      change((s) => after.forEach((id, index) => {
+        const goal = s.goals.find((g) => g.id === id);
+        if (goal) goal.order = index;
+      }));
+    };
+    list.addEventListener('pointermove', follow);
+    list.addEventListener('pointerup', finish);
+    list.addEventListener('pointercancel', finish);
+    list.addEventListener('lostpointercapture', finish);
+  });
+}
+
 export function renderGoals(view: HTMLElement, now: number): void {
   const state = getState();
   const f = forecast(state, now);
-  const { open, done } = sortedGoals(state);
-  const cards = open.map((goal, index) => {
-    const status = goalStatus(state, goal, f);
+  const { done } = sortedGoals(state);
+  const plan = goalPlan(state, f);
+  const list = h('ol', { class: 'goals' });
+  for (const [index, { goal, status }] of plan.entries()) {
     const when = status.when === 'now'
       ? h('strong', { class: 'positive' }, t('goals', 'Can buy now'))
       : status.when === null
         ? h('span', { class: 'muted' }, f ? t('goals', 'Not within the forecast horizon') : t('goals', 'The forecast starts with the first reconciliation'))
         : h('strong', null, t('goals', 'Can buy on {date}', { date: date(status.when) }));
-    return h('article', { class: 'card goal', 'data-test': `goal-${goal.id}` },
+    const above = plan[index - 1]?.goal;
+    const handle = h('button', {
+      type: 'button', class: 'icon-button goal-handle', key: `goal-drag-${goal.id}`, disabled: plan.length < 2,
+      title: t('goals', 'Drag to change the order'), 'aria-label': t('goals', 'Priority {number}: drag, or move with the arrow keys', { number: index + 1 }),
+      on: {
+        keydown: (e) => {
+          const key = (e as KeyboardEvent).key;
+          if (key !== 'ArrowUp' && key !== 'ArrowDown') return;
+          e.preventDefault();
+          move(goal, key === 'ArrowUp' ? -1 : 1);
+        },
+      },
+    }, icon('grip'));
+    const card = h('li', { class: 'card goal', 'data-id': goal.id, 'data-test': `goal-${goal.id}` },
       h('div', { class: 'card-head' },
+        handle,
+        h('span', { class: 'goal-rank', 'aria-hidden': 'true' }, index + 1),
         h('h2', { class: 'card-title' }, goal.name, ' ', h('span', { class: 'goal-price' }, money(state, goal.amount, goal.currency))),
-        h('div', { class: 'goal-tools' },
-          h('button', { type: 'button', class: 'icon-button', disabled: index === 0, 'aria-label': t('goals', 'Move up'), key: `goal-up-${goal.id}`, on: { click: () => move(goal, -1) } }, icon('up')),
-          h('button', { type: 'button', class: 'icon-button', disabled: index === open.length - 1, 'aria-label': t('goals', 'Move down'), key: `goal-down-${goal.id}`, on: { click: () => move(goal, 1) } }, icon('down')),
-          h('button', { type: 'button', class: 'icon-button', 'aria-label': t('goals', 'Edit'), key: `goal-edit-${goal.id}`, on: { click: () => openGoal(goal) } }, icon('edit')))),
-      h('p', { class: 'muted goal-rule' }, ruleText(state, goal)),
+        h('button', { type: 'button', class: 'icon-button', 'aria-label': t('goals', 'Edit'), key: `goal-edit-${goal.id}`, on: { click: () => openGoal(goal) } }, icon('edit'))),
+      h('p', { class: 'muted goal-rule' }, ruleText(state, goal),
+        status.ahead > 0 ? [h('br'), h('span', { 'data-test': 'ahead' }, t('goals', 'After the goals above, which take {amount}', { amount: inBase(state, status.ahead) }))] : null),
       h('div', { class: 'progress', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(status.progress) },
         h('span', { class: 'progress-bar', style: `width: ${status.progress.toFixed(2)}%` })),
       h('dl', { class: 'goal-facts' },
         h('div', null, h('dt', null, t('goals', 'Needed')), h('dd', { 'data-test': 'threshold' }, inBase(state, status.threshold))),
-        h('div', null, h('dt', null, t('goals', 'Have now')), h('dd', null, inBase(state, status.have))),
+        h('div', null, h('dt', null, t('goals', 'Have now')), h('dd', { 'data-test': 'have' }, inBase(state, status.have))),
         h('div', null, h('dt', null, t('goals', 'Progress')), h('dd', { 'data-test': 'progress' }, `${new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(status.progress)} %`)),
         h('div', null, h('dt', null, t('goals', 'Lacking')), h('dd', { 'data-test': 'lacking' }, inBase(state, status.lacking)))),
       h('div', { class: 'goal-foot' },
-        h('span', { 'data-test': 'when' }, when),
+        h('span', { class: 'goal-when' }, h('span', { 'data-test': 'when' }, when),
+          status.waiting && above ? h('span', { class: 'muted', 'data-test': 'waits' }, t('goals', 'Waits for {name}', { name: above.name })) : null),
         h('button', { type: 'button', class: 'button button--small', key: `goal-bought-${goal.id}`, on: { click: () => bought(goal) } }, icon('check'), t('goals', 'Bought'))));
-  });
+    if (plan.length > 1) draggable(list, card, handle);
+    list.append(card);
+  }
 
   view.append(
     h('div', { class: 'page-head' },
       h('h1', { class: 'page-title' }, t('goals', 'Goals')),
       h('button', { type: 'button', class: 'button button--primary', key: 'add-goal', on: { click: () => openGoal(null) } }, icon('plus'), t('goals', 'Goal'), h('kbd', { class: 'kbd' }, 'N'))),
-    open.length
-      ? h('p', { class: 'muted' }, t('goals', 'Each goal is measured against the same personal money: buying one is not taken out of another.'))
-      : h('section', { class: 'card' }, h('p', { class: 'muted' }, t('goals', 'Something to buy? Add it, with how much should be left over, and the forecast tells you when.'))),
-    h('div', { class: 'goals' }, ...cards),
+    plan.length > 1
+      ? h('p', { class: 'muted' }, t('goals', 'Goals are bought from the top down: each counts on the money the ones above it leave. Drag a goal to change the order.'))
+      : plan.length
+        ? ''
+        : h('section', { class: 'card' }, h('p', { class: 'muted' }, t('goals', 'Something to buy? Add it, with how much should be left over, and the forecast tells you when.'))),
+    list,
     done.length
       ? h('details', { class: 'card done-goals' },
           h('summary', null, t('goals', 'Reached ({count})', { count: done.length })),

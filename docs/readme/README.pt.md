@@ -51,8 +51,9 @@ também é um PWA que pode ser instalado e roda em sua própria janela.
 5. Em **Recorrentes**, adicione o salário, o aluguel, as assinaturas, o pagamento mensal do
    cartão — diário, semanal, mensal ou anual. Em **Avulsas**, adicione o que as recorrentes não
    cobrem: uma compra, um bônus, uma viagem planejada.
-6. A cada uma ou duas semanas, concilie de novo. O relatório mostra o que ficou sem registrar,
-   quanto tempo o dinheiro dura, e as metas em **Metas** dizem quando podem ser compradas.
+6. A cada uma ou duas semanas, concilie de novo. O relatório mostra o que ficou sem registrar
+   (e oferece planejar para isso, se continuar acontecendo), quanto tempo o dinheiro dura, e as
+   metas em **Metas** dizem quando podem ser compradas.
 
 ### No celular
 
@@ -89,13 +90,21 @@ ou gasto) para que nada fique sem registrar também.
 
 A previsão começa na última conciliação e soma cada operação desde então — isso é o "esperado
 agora". Dali em diante ela avança dia a dia até o horizonte (cinco anos por padrão): as operações
-recorrentes, as avulsas planejadas e, a menos que seja desativado, o ritmo médio do gasto não
-registrado (o dinheiro não registrado das conciliações dos últimos 90 dias, dividido pelos seus
-dias). A receita não registrada não entra na conta. "O dinheiro dura até" é o primeiro momento em
+recorrentes e as avulsas planejadas, nada mais. "O dinheiro dura até" é o primeiro momento em
 que o dinheiro nas contas chega a zero; se o dinheiro próprio (as contas menos as dívidas) ficar
 negativo antes, essa data aparece em segundo lugar. Se nenhum dos dois acontecer dentro do
-horizonte, o relatório diz que o dinheiro dura mais — ou, se crescer, quanto por mês. A data de
-uma meta é o primeiro momento em que a previsão alcança seu limite.
+horizonte, o relatório diz que o dinheiro dura mais — ou, se crescer, quanto por mês. As metas
+são compradas na sua ordem, a de cima primeiro: a data de uma meta é o primeiro momento, não
+anterior ao da meta acima dela, em que a previsão alcança seu limite mais os preços das metas
+acima.
+
+O dinheiro não registrado não é planejado por conta própria: uma carteira perdida ou um
+conserto avulso não deveriam deixar todo mês seguinte mais pobre. Em vez disso, o relatório
+mostra o seu ritmo médio — o dinheiro não registrado das conciliações nos 90 dias até a última,
+dividido pelos seus dias — e, para gastos, oferece adicioná-lo como uma despesa recorrente
+diária sem conta. Uma vez adicionado, a previsão conta com ele como com qualquer outra
+operação, e as próximas conciliações mostram apenas o que fica não registrado além dele. A
+receita não registrada não entra na conta.
 
 ### As taxas, e por que a taxa de uma dívida a torna maior
 
@@ -130,21 +139,29 @@ pagamento como uma transferência para a dívida.
   anuais, em vigor a partir de um momento e até uma data; o dia 31 em um mês mais curto é o seu
   último dia, e 29 de fevereiro em um ano comum é o 28. Os horários são locais, então uma
   operação diária às 09:00 permanece às 09:00 mesmo com a mudança de horário.
-- Operações avulsas com um formulário rápido: o cursor no campo de valor, Enter salva, a última
-  conta usada.
+- Operações avulsas em um formulário atrás de um botão (ou <kbd>N</kbd>): o cursor no campo de
+  valor, Enter salva, a última conta usada. A lista abre no que a próxima conciliação vai contar;
+  um filtro mostra o intervalo entre duas conciliações passadas, tudo, ou datas de–até, com o
+  total das operações exibidas.
 - Transferências entre contas em moedas diferentes, com o valor creditado; uma transferência
   para uma dívida a quita.
 - O gráfico de previsão para uma semana, um mês, 3 ou 6 meses ou um ano: dinheiro próprio,
   dinheiro nas contas, a linha do zero e as metas; uma mira com os valores, e os mesmos números
   em uma tabela.
 - Metas compradas "com dinheiro de sobra" (dinheiro próprio pelo menos o preço mais uma margem)
-  ou "como parte" (o preço no máximo uma parte do dinheiro próprio); Comprado registra a despesa.
+  ou "como parte" (o preço no máximo uma parte do dinheiro próprio), em uma lista por prioridade:
+  arraste uma para cima para comprá-la antes. Comprado registra a despesa.
 - Uma conciliação passada abre a aba Contas como ela estava, com o que esperava e o que
   encontrou, e o que foi registrado no intervalo.
-- Exportação e importação como JSON ou como o próprio arquivo SQLite; no Chrome e no Edge, uma
+- Exportação e importação como JSON ou como o próprio arquivo SQLite, este último também
+  criptografado com uma senha para uma cópia guardada em outro lugar; no Chrome e no Edge, uma
   cópia automática gravada em um arquivo de sua escolha depois de cada mudança.
-- "Novo banco de dados…" em Configurações: tudo é substituído por um banco de dados vazio,
-  depois de um aviso que oferece uma exportação e, se houver um PIN, pede por ele.
+- Vários bancos de dados em um mesmo navegador — um para a família e outro para um negócio,
+  digamos — cada um com suas próprias contas, metas e PIN. Havendo mais de um, o app abre na
+  lista deles, e o nome do que está aberto fica na barra superior (um clique volta para a
+  lista). Um arquivo é importado no lugar do banco de dados aberto ou como um novo ao lado dele.
+- "Excluir este banco de dados…" em Configurações, depois de um aviso que oferece uma
+  exportação e, se houver um PIN, pede por ele; o único banco de dados dá lugar a um novo, vazio.
 - Um PIN de quatro dígitos para o banco de dados, pedido quando ele é criado: a página não
   mostra nada até ele ser digitado, e cada PIN errado dobra a pausa antes da próxima tentativa,
   de um segundo até uma hora.
@@ -156,7 +173,7 @@ pagamento como uma transferência para a dívida.
 | Tecla | O que faz |
 | --- | --- |
 | <kbd>R</kbd> | Conciliar |
-| <kbd>N</kbd> | Uma conta, operação recorrente ou meta nova na aba aberta; o valor do formulário rápido em Avulsas |
+| <kbd>N</kbd> | Uma conta, operação recorrente, operação avulsa ou meta nova na aba aberta |
 | <kbd>Enter</kbd> | Em um formulário: o próximo campo; no último, salva |
 | <kbd>Esc</kbd> | Fecha a caixa de diálogo |
 
@@ -168,10 +185,11 @@ Em uma tela touch as dicas de teclas não são mostradas.
   `default-src 'none'` e `connect-src 'none'`; o WebAssembly é permitido para o SQLite
   (`'wasm-unsafe-eval'`), e `blob:` para o download da exportação. A compilação para diante de
   qualquer `src` ou `href` externo, e a CI confere de novo.
-- Os dados ficam no IndexedDB deste navegador: um registro com os bytes do banco de dados
-  SQLite, gravado por inteiro após cada mudança, para que um salvamento nunca fique pela metade.
-  O `localStorage` guarda só o idioma, o tema, a aba aberta, os grupos recolhidos, o período do
-  gráfico e a pausa depois de um PIN errado.
+- Os dados ficam no IndexedDB deste navegador: um registro por banco de dados com seus bytes
+  SQLite, gravado por inteiro após cada mudança, para que um salvamento nunca fique pela metade,
+  e um registro com a lista dos bancos de dados. O `localStorage` guarda só o idioma, o tema, a
+  aba aberta, os grupos recolhidos, o período do gráfico e a pausa depois de um PIN errado; o
+  `sessionStorage`, qual banco de dados a aba abriu.
 - Ler o banco de dados ou um arquivo importado confere cada campo: um valor corrompido é
   substituído pelo seu padrão em vez de travar o aplicativo.
 - Depois do primeiro salvamento o aplicativo pede ao navegador para manter seu armazenamento
@@ -180,7 +198,14 @@ Em uma tela touch as dicas de teclas não são mostradas.
   arquivos do navegador: os dados não são criptografados. Só o hash dele é guardado (PBKDF2 com
   um sal), entre as configurações do banco de dados, então uma exportação o carrega consigo e
   pede o mesmo PIN onde quer que seja importada. Um PIN esquecido não pode ser recuperado:
-  "Esqueceu o PIN?" apaga o banco de dados e começa um novo, vazio.
+  "Esqueceu o PIN?" apaga o banco de dados e começa um novo, vazio — só depois de digitado o nome
+  do banco de dados, para que uma criança apertando botões não o apague.
+- Para uma cópia guardada em uma pasta na nuvem ou em um pendrive, "Exportar criptografado…"
+  grava o arquivo SQLite criptografado com uma senha de pelo menos 8 caracteres: AES-256-GCM
+  com uma chave derivada por PBKDF2-SHA-256 (600 000 iterações, um sal aleatório). Sem a senha
+  ninguém pode abrir o arquivo — nem o Cashflow — e uma senha esquecida não pode ser
+  recuperada. Importá-lo pede a senha. Os dados no navegador continuam como estavam, atrás do
+  PIN.
 
 ## Traduções
 
@@ -289,8 +314,9 @@ src/core/             sem DOM: os testes rodam no Node
   flows.ts            operações como movimentos de dinheiro entre contas e moedas
   reconcile.ts        saldos esperados e reais, a fotografia, o dinheiro não registrado e seu ritmo
   forecast.ts         a curva adiante, quando o dinheiro acaba, quando um limite é alcançado
-  goals.ts            o limite, o progresso e a data de uma meta
+  goals.ts            o limite, o progresso e a data de uma meta, em ordem de prioridade
   pin.ts              o PIN do banco de dados: seu hash salgado, sua verificação, a pausa depois dos errados
+  encryption.ts       uma exportação criptografada com uma senha: AES-256-GCM, a chave a partir do PBKDF2
   state.ts            os tipos do estado, conferência do que é lido, migrações de documentos antigos
   db.ts               o estado em SQLite: o esquema e suas migrações, uma transação por salvamento
   sqlite.ts           sql.js com seu WebAssembly embutido
@@ -300,19 +326,20 @@ src/app/              a página: o arquivo único e o PWA
   styles.css          paleta, temas claro e escuro, o layout para celular
   main.ts             início, abas, desenho, atalhos
   store.ts            o estado em memória, salvo em SQLite e IndexedDB um instante depois de cada mudança
-  storage.ts          IndexedDB: os bytes do banco de dados, o handle de arquivo da cópia automática; persist()
+  storage.ts          IndexedDB: os bytes de cada banco de dados e o handle de arquivo da cópia automática, sua lista; persist()
+  databases.ts        vários bancos de dados: sua lista, a escolha na entrada, a troca, o cartão em Configurações
   lock.ts             a tela que pede o PIN, a pergunta sobre um banco de dados novo, seu cartão em Configurações
   prefs.ts            localStorage: idioma, tema, aba, grupos recolhidos, período do gráfico
   accounts.ts         a aba Contas, o relatório, o histórico, uma conciliação passada
   account-dialog.ts   criar, editar, arquivar e excluir contas e dívidas
   reconcile-form.ts   o formulário de conciliação
   recurring.ts        a aba Recorrentes e seu formulário; versões das operações
-  oneoff.ts           a aba Avulsas e seu formulário rápido
+  oneoff.ts           a aba Avulsas, seu filtro por período e seu formulário
   op-fields.ts        os campos que as operações compartilham: tipo, valor, conta ou moeda, transferência
-  goals.ts            a aba Metas, Comprado
+  goals.ts            a aba Metas: a lista por prioridade, arrastar, Comprado
   chart.ts            o gráfico de previsão, SVG feito à mão
-  settings.ts         a aba Configurações: moedas e cotações, previsão, idioma, tema, dados, PIN
-  backup.ts           exportação e importação (JSON e SQLite), a cópia automática
+  settings.ts         a aba Configurações: moedas e cotações, previsão, idioma, tema, dados, bancos de dados, PIN
+  backup.ts           exportação e importação (JSON, SQLite, criptografada), exclusão de um banco de dados, a cópia automática
   update.ts           as atualizações do PWA
   ui.ts, dom.ts       caixas de diálogo, avisos, campos; construção do DOM
   format.ts, inputs.ts  valores e datas no idioma da interface; o campo de valor
@@ -335,7 +362,8 @@ build/                o resultado do build; build/pages/ é o PWA para o GitHub 
   normalmente também, mas algumas configurações e janelas privadas não — a página então avisa
   isso no topo e funciona só em memória: exporte os dados, ou use o aplicativo instalado.
 - Os juros de empréstimos não são modelados; é uma despesa recorrente que você adiciona.
-- Cada meta é medida isoladamente: comprar uma não é descontado das outras.
+- As metas são compradas uma após a outra, na sua ordem: uma meta barata mais abaixo na lista
+  espera pelas de cima, mesmo quando já poderia ser comprada.
 
 ## Licença
 

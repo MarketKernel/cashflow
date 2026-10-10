@@ -192,22 +192,41 @@ export interface UnaccountedRate {
 
 /**
  *   rate_per_day = Σ unaccounted_i / Σ days_i
- * over the intervals between reconciliations that end within the window.
+ * over the intervals between reconciliations that end within the window — the
+ * window days up to the last reconciliation, not up to now: the pace stays
+ * what it was until the next reconciliation, however long that takes. With
+ * `after`, only the intervals that end after it count.
  */
-export function unaccountedRate(state: State, now: number): UnaccountedRate {
-  const recs = state.reconciliations;
-  const since = now - state.forecast.windowDays * DAY;
+export function unaccountedRate(state: State, now: number, after = -Infinity): UnaccountedRate {
+  const recs = state.reconciliations.filter((r) => r.at <= now);
+  const since = (recs.at(-1)?.at ?? now) - state.forecast.windowDays * DAY;
   let sum = 0;
   let length = 0;
   let intervals = 0;
   for (let i = 1; i < recs.length; i += 1) {
     const rec = recs[i]!;
-    if (rec.at < since || rec.at > now) continue;
+    if (rec.at < since || rec.at <= after) continue;
     sum += unaccountedNow(state, rec);
     length += (rec.at - recs[i - 1]!.at) / DAY;
     intervals += 1;
   }
   return { perDay: length > 0 ? sum / length : 0, intervals, days: length };
+}
+
+/**
+ * When spending outside the accounts was last planned: the latest start of a
+ * recurring expense with no account still in force — what adding unaccounted
+ * spending as a recurring expense creates. The intervals that ended before it
+ * were unaccounted against a plan without it, so the pace is learnt from the
+ * ones after; otherwise the same spending would be offered for adding again.
+ */
+export function plannedSince(state: State, now: number): number | undefined {
+  let latest: number | undefined;
+  for (const op of state.recurring) {
+    if (op.type !== 'expense' || op.accountId !== undefined || (op.validTo !== undefined && op.validTo <= now)) continue;
+    latest = Math.max(latest ?? -Infinity, op.validFrom);
+  }
+  return latest;
 }
 
 /** The values of a snapshot as it was: its balances, its fees, its rates. */

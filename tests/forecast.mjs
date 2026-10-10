@@ -45,12 +45,36 @@ check('a goal in dollars converts at the bare rate', near(dollars, 1100 * 41.5),
   check('growing: +50 000 a month', near(f.perMonth, 50000, 1), true);
   const when = C.goalStatus(s, laptop, f).when;
   check('the goal can be bought on the first salary day', when, at(2026, 10, 10));
+
+  // Goals in order: each counts on what the ones above leave, and comes no earlier than them.
+  const cheap = { ...laptop, id: 'c', name: 'Cheap', amount: 100000, rule: { kind: 'margin', margin: 0 }, order: 1 };
+  const car = { ...laptop, id: 'car', name: 'Car', amount: 8000000, rule: { kind: 'margin', margin: 0 }, order: 2 };
+  s.goals.push(laptop, cheap, car);
+  const plan = C.goalPlan(s, f);
+  check('in order: the first counts on all personal money', [near(plan[0].status.ahead, 0), plan[0].status.when], [true, at(2026, 10, 10)]);
+  check('in order: a cheap goal waits for the one above, though affordable now', plan[1].status.when, at(2026, 10, 10));
+  check('in order: it has what the laptop leaves, 20 285', near(plan[1].status.have, 20285), true);
+  check('in order: the car needs 80 000 after 41 000 — the second salary', plan[2].status.when, at(2026, 11, 10));
+  check('in order: the car lacks 80 000 − 19 285', near(plan[2].status.lacking, 60715), true);
+  check('in order: only the cheap goal is held back by the one above', plan.map((p) => p.status.waiting), [false, true, false]);
+  s.goals.find((g) => g.id === 'c').order = -1;
+  const swapped = C.goalPlan(s, f);
+  check('the cheap goal on top: now', [swapped[0].goal.id, swapped[0].status.when], ['c', 'now']);
+  check('the laptop after it needs 71 000: the first salary', swapped[1].status.when, at(2026, 10, 10));
+}
+
+// After a goal beyond the horizon, the ones below are too, however cheap.
+{
+  const s = structuredClone(state);
+  s.goals.push(laptop, { ...laptop, id: 'c', amount: 100000, rule: { kind: 'margin', margin: 0 }, order: 1 });
+  const plan = C.goalPlan(s, flat);
+  check('below a goal never reached: never', plan.map((p) => p.status.when), [null, null]);
+  check('… though it could be bought now: it waits', plan.map((p) => p.status.waiting), [false, true]);
 }
 
 // Spending runs it out: the last day there is money, to the payment.
 {
   const s = monoState(C);
-  s.forecast.includeUnaccounted = false;
   const R2 = at(2026, 10, 8, 10);
   s.reconciliations.push(C.reconcile(s, new Map([['mono', 2140000]]), R2, 'r'));
   s.recurring.push({ id: 'food', seriesId: 'food', type: 'expense', name: 'Food', amount: 30000, accountId: 'mono', currency: 'UAH', schedule: { every: 'day', time: '09:00' }, validFrom: R2 });
@@ -67,7 +91,7 @@ check('a goal in dollars converts at the bare rate', near(dollars, 1100 * 41.5),
   check('… the accounts still on 19 Dec', g.assetsZero, at(2026, 12, 19, 9));
 }
 
-// The section 4 interval with the pace of unaccounted spending.
+// The section 4 interval: −1 500 unaccounted is reported, not projected.
 {
   const s = monoState(C);
   const R1 = at(2026, 10, 1, 10);
@@ -78,14 +102,12 @@ check('a goal in dollars converts at the bare rate', near(dollars, 1100 * 41.5),
   s.reconciliations.push(C.reconcile(s, new Map([['mono', 2140000]]), R2, 'r2'));
   const later = R2 + 2 * day;
   const f = C.forecast(s, later);
-  check('the pace is used: −214.29 a day', round2(f.pace), -214.29);
-  check('expected now, two days on: 21 400 − 2 × 300 − 2 × 214.29', round2(f.current.personal), round2(21400 - 600 - 1500 / 7 * 2));
-  s.forecast.includeUnaccounted = false;
-  check('… or without the pace', round2(C.forecast(s, later).current.personal), 20800);
-  s.forecast.includeUnaccounted = true;
-  // Unaccounted income is not counted on.
-  s.reconciliations[1] = C.reconcile(s, new Map([['mono', 2500000]]), R2, 'r2');
-  check('unaccounted income: no pace', C.forecast(s, later).pace, 0);
+  check('unaccounted spending is not projected: expected now 21 400 − 2 × 300', round2(f.current.personal), 20800);
+  check('… nor ahead: 300 a day', round2(f.points[30].personal), 20800 - 30 * 300);
+  // Added as a recurring expense at its pace, it is planned like any other.
+  s.recurring.push({ id: 'lost', seriesId: 'lost', type: 'expense', name: 'Unaccounted', amount: 21429, currency: 'UAH', schedule: { every: 'day', time: '09:00' }, validFrom: later });
+  const g = C.forecast(s, later);
+  check('… then 300 + 214.29 a day', round2(g.points[30].personal), round2(20800 - 30 * 514.29));
 }
 
 // Planned one-offs are in the forecast, past ones in "expected now".

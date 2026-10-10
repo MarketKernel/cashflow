@@ -12,10 +12,16 @@ import { t } from '../core/i18n';
 import { PIN, type PinHash, checkPin, makePin, pinAvailable, pinDigits, pinWait } from '../core/pin';
 import { h } from './dom';
 import { localeTag } from './format';
+import { FIRST, currentDatabase } from './storage';
 import { change, getState } from './store';
-import { confirmDialog, dialog, enterMovesOn, field, toast } from './ui';
+import { dialog, enterMovesOn, field, toast } from './ui';
 
-const WAIT_KEY = 'cashflow-pin-wait';
+/**
+ * Each database's own pause: wrong tries on one do not hold up the owner of
+ * another, and opening one does not clear the pause of another — or a second
+ * database with a PIN of one's own would undo every pause.
+ */
+const waitKey = (): string => (currentDatabase() === FIRST ? 'cashflow-pin-wait' : `cashflow-pin-wait:${currentDatabase()}`);
 /** A pause over this long ago is forgotten: a child's tries yesterday cost the owner nothing today. */
 const FORGET_AFTER = 24 * 3600 * 1000;
 
@@ -28,7 +34,7 @@ interface Wait {
 
 function readWait(): Wait {
   try {
-    const raw: unknown = JSON.parse(localStorage.getItem(WAIT_KEY) ?? 'null');
+    const raw: unknown = JSON.parse(localStorage.getItem(waitKey()) ?? 'null');
     if (raw && typeof raw === 'object') {
       const { wrong, until } = raw as Record<string, unknown>;
       if (typeof wrong === 'number' && Number.isInteger(wrong) && wrong > 0 && typeof until === 'number' && Number.isFinite(until)
@@ -42,8 +48,8 @@ function readWait(): Wait {
 
 function saveWait(wait: Wait | null): void {
   try {
-    if (wait) localStorage.setItem(WAIT_KEY, JSON.stringify(wait));
-    else localStorage.removeItem(WAIT_KEY);
+    if (wait) localStorage.setItem(waitKey(), JSON.stringify(wait));
+    else localStorage.removeItem(waitKey());
   } catch {
     /* private mode with no storage: the pause lasts this visit */
   }
@@ -79,9 +85,11 @@ function clock(seconds: number): string {
  *
  * Each try is checked against the PIN the state holds now (another window may
  * have changed it), and the pause is read anew from storage, which every tab
- * shares: more tabs give no more tries.
+ * shares: more tabs give no more tries. `name` is the database's: a forgotten
+ * PIN deletes it only once the name is typed. With several databases (`another`
+ * given), the screen shows the name, and `another` goes back to their list.
  */
-export function unlock(): Promise<'open' | 'anew'> {
+export function unlock(name: string, another?: () => void): Promise<'open' | 'anew'> {
   isLocked = true;
   return new Promise((resolve) => {
     let wait = readWait();
@@ -91,8 +99,11 @@ export function unlock(): Promise<'open' | 'anew'> {
     const input = pinInput('pin-unlock', t('lock', 'PIN'));
     const message = h('p', { class: 'lock-message', role: 'alert' });
     const button = h('button', { type: 'button', class: 'button button--primary', key: 'pin-unlock-button', on: { click: () => void attempt() } }, t('lock', 'Unlock'));
-    const forgot = h('button', { type: 'button', class: 'link-button', key: 'pin-forgot', on: { click: () => void anew() } }, t('lock', 'Forgot the PIN?'));
-    const shown = screen(t('lock', 'Enter the PIN'), input, message, button, forgot);
+    const forgot = h('button', { type: 'button', class: 'link-button', key: 'pin-forgot', on: { click: () => anew() } }, t('lock', 'Forgot the PIN?'));
+    const shown = screen(t('lock', 'Enter the PIN'),
+      another ? h('p', { class: 'lock-note', key: 'pin-database' }, name) : null,
+      input, message, button, forgot,
+      another ? h('button', { type: 'button', class: 'link-button', key: 'pin-another', on: { click: another } }, t('lock', 'Another database')) : null);
     const finish = (how: 'open' | 'anew'): void => {
       if (done) return;
       done = true;
@@ -152,15 +163,37 @@ export function unlock(): Promise<'open' | 'anew'> {
       input.classList.add('invalid');
       pause();
     };
-    const anew = async (): Promise<void> => {
-      const ok = await confirmDialog(
-        t('lock', 'Start a new database?'),
-        t('lock', 'Without the PIN this database cannot be opened. A new, empty one takes its place: everything in this one is deleted for good.'),
-        t('lock', 'Delete and start anew'),
-        true,
-      );
-      if (ok) finish('anew');
-      else if (!input.disabled) input.focus();
+    // A child trying keys finds "Forgot the PIN?" soon enough: the database goes only once its name is typed.
+    const anew = (): void => {
+      let ok = false;
+      const typed = h('input', {
+        type: 'text', key: 'forgot-name', autocomplete: 'off', spellcheck: 'false', 'aria-label': t('lock', 'The name of the database'),
+        on: { input: () => typed.classList.remove('invalid') },
+      });
+      const opened = dialog(t('lock', 'Start a new database?'), [
+        h('p', null, t('lock', 'Without the PIN this database cannot be opened. A new, empty one takes its place: everything in this one is deleted for good.')),
+        field(t('lock', 'To delete it, type its name: {name}', { name }), typed),
+      ], [
+        { label: t('dialog', 'Cancel') },
+        {
+          label: t('lock', 'Delete and start anew'), kind: 'danger', key: 'confirm',
+          run: () => {
+            ok = typed.value.trim().toLocaleLowerCase() === name.trim().toLocaleLowerCase();
+            if (ok) return true;
+            typed.classList.add('invalid');
+            typed.focus();
+            toast(t('lock', 'The name does not match'), 'error');
+            return false;
+          },
+        },
+      ], {
+        onClose: () => {
+          if (ok) finish('anew');
+          else if (!input.disabled) input.focus();
+        },
+      });
+      enterMovesOn([typed], () => opened.element.querySelector<HTMLButtonElement>('[data-key="confirm"]')?.click());
+      typed.focus();
     };
     // Four digits are the whole PIN: it is checked as soon as they are typed.
     input.addEventListener('input', () => {

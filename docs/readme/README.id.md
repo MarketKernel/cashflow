@@ -52,8 +52,8 @@ jendelanya sendiri.
    mingguan, bulanan, atau tahunan. Di **Insidental**, tambahkan yang tidak tercakup oleh
    yang rutin: pembelian, bonus, liburan yang direncanakan.
 6. Setiap satu atau dua minggu, lakukan rekonsiliasi lagi. Laporan memberi tahu apa yang tak
-   tercatat, berapa lama uang akan bertahan, dan target-target di **Target** memberi tahu
-   kapan masing-masing bisa dibeli.
+   tercatat (dan menawarkan untuk memperhitungkannya jika itu terus terjadi), berapa lama uang
+   akan bertahan, dan target-target di **Target** memberi tahu kapan masing-masing bisa dibeli.
 
 ### Di ponsel
 
@@ -93,14 +93,23 @@ perginya uang itu (akun lain, atau dibelanjakan) sehingga itu pun tidak menjadi 
 
 Perkiraan dimulai dari rekonsiliasi terakhir dan menambahkan setiap operasi sejak saat itu —
 itulah "perkiraan sekarang". Dari sana, perkiraan berjalan hari demi hari hingga cakrawala
-(lima tahun secara bawaan): operasi rutin, operasi insidental yang direncanakan, dan, kecuali
-dimatikan, laju rata-rata pengeluaran tak tercatat (uang tak tercatat dari rekonsiliasi dalam
-90 hari terakhir, dibagi jumlah harinya). Pemasukan yang tak tercatat tidak dihitung. "Uang
-bertahan hingga" adalah momen pertama uang di akun mencapai nol; jika uang pribadi (akun
-dikurangi utang) turun di bawah nol lebih dulu, tanggal itu muncul sebagai yang kedua. Jika
-tidak ada yang terjadi dalam cakrawala tersebut, laporan mengatakan uang bertahan lebih lama
-— atau, jika bertambah, berapa banyak per bulan. Tanggal sebuah target adalah momen pertama
-perkiraan mencapai ambang batasnya.
+(lima tahun secara bawaan): operasi rutin dan operasi insidental yang direncanakan, tidak ada
+yang lain. "Uang bertahan hingga" adalah momen pertama uang di akun mencapai nol; jika uang
+pribadi (akun dikurangi utang) turun di bawah nol lebih dulu, tanggal itu muncul sebagai yang
+kedua. Jika tidak ada yang terjadi dalam cakrawala tersebut, laporan mengatakan uang bertahan
+lebih lama — atau, jika bertambah, berapa banyak per bulan. Target dibeli sesuai urutannya,
+yang teratas lebih dulu: tanggal sebuah target adalah momen pertama, tidak lebih awal dari
+target di atasnya, saat perkiraan mencapai ambang batasnya ditambah harga target-target di
+atasnya.
+
+Uang tak tercatat tidak diperhitungkan dengan sendirinya dalam perkiraan: dompet yang hilang
+atau perbaikan sekali waktu tidak seharusnya membuat setiap bulan ke depan terlihat lebih
+miskin. Sebagai gantinya, laporan menampilkan laju rata-ratanya — uang tak tercatat dari
+rekonsiliasi dalam 90 hari sampai yang terakhir, dibagi jumlah harinya — dan, untuk
+pengeluaran, menawarkan untuk menambahkannya sebagai pengeluaran berulang harian tanpa akun.
+Setelah ditambahkan, perkiraan memperhitungkannya seperti operasi lainnya, dan rekonsiliasi
+berikutnya hanya menunjukkan yang masih tak tercatat di luar itu. Pemasukan yang tak tercatat
+tidak diperhitungkan.
 
 ### Biaya, dan mengapa biaya utang membuatnya lebih besar
 
@@ -137,22 +146,32 @@ sendiri sebagai transfer ke utang tersebut.
   bulan yang lebih pendek menjadi hari terakhir bulan itu, dan 29 Februari pada tahun biasa
   menjadi tanggal 28. Waktu bersifat lokal, sehingga jam 09:00 harian tetap pada 09:00 saat
   pergantian waktu musim.
-- Operasi insidental dengan formulir cepat: kursor berada di kolom jumlah, Enter menyimpan,
-  akun terakhir yang digunakan diingat.
+- Operasi insidental dalam formulir di balik tombol (atau <kbd>N</kbd>): kursor berada di kolom
+  jumlah, Enter menyimpan, akun terakhir yang digunakan diingat. Daftar terbuka menampilkan apa
+  yang tercakup dalam rekonsiliasi berikutnya; filter menampilkan interval antara dua
+  rekonsiliasi masa lalu, semuanya, atau tanggal dari–hingga, beserta total operasi yang
+  ditampilkan.
 - Transfer antar akun dengan mata uang berbeda, dengan jumlah yang dikreditkan; transfer ke
   utang melunasinya.
 - Grafik perkiraan untuk satu minggu, satu bulan, 3 atau 6 bulan, atau satu tahun: uang
   pribadi, uang di akun, garis nol, dan target; garis silang penunjuk dengan nilai-nilainya,
   dan angka yang sama juga sebagai tabel.
 - Target dibeli "dengan uang tersisa" (uang pribadi setidaknya sebesar harga ditambah margin)
-  atau "sebagai bagian" (harga paling banyak sebagian dari uang pribadi); Dibeli mencatat
+  atau "sebagai bagian" (harga paling banyak sebagian dari uang pribadi), dalam daftar menurut
+  prioritas: seret salah satu lebih tinggi untuk membelinya lebih cepat. Dibeli mencatat
   pengeluarannya.
 - Rekonsiliasi lama membuka tab Akun seperti keadaan saat itu, dengan apa yang diharapkan dan
   apa yang ditemukan, serta apa yang tercatat dalam rentang waktu tersebut.
-- Ekspor dan impor sebagai JSON atau sebagai berkas SQLite itu sendiri; di Chrome dan Edge,
-  salinan otomatis ditulis ke berkas pilihan Anda setelah setiap perubahan.
-- "Basis data baru…" di Pengaturan: semuanya diganti dengan basis data kosong, setelah
-  peringatan yang menawarkan ekspor dan, jika ada PIN, memintanya.
+- Ekspor dan impor sebagai JSON atau sebagai berkas SQLite itu sendiri, yang terakhir ini juga
+  dapat dienkripsi dengan kata sandi untuk salinan yang disimpan di tempat lain; di Chrome dan
+  Edge, salinan otomatis ditulis ke berkas pilihan Anda setelah setiap perubahan.
+- Beberapa basis data dalam satu browser — misalnya satu untuk keluarga dan satu untuk bisnis —
+  masing-masing dengan akun, target, dan PIN sendiri. Jika lebih dari satu, aplikasi terbuka pada
+  daftarnya, dan nama basis data yang terbuka ditampilkan di bilah atas (klik untuk kembali ke
+  daftar). Berkas yang diimpor menggantikan basis data yang terbuka, atau menjadi basis data baru
+  di sampingnya.
+- "Hapus basis data ini…" di Pengaturan, setelah peringatan yang menawarkan ekspor dan, jika ada
+  PIN, memintanya; satu-satunya basis data memberi jalan ke yang baru dan kosong.
 - PIN empat angka untuk basis data, diminta saat basis data dibuat: halaman tidak menampilkan
   apa pun sampai PIN itu diketik, dan setiap PIN yang salah menggandakan jeda sebelum percobaan
   berikutnya, dari satu detik hingga satu jam.
@@ -164,7 +183,7 @@ sendiri sebagai transfer ke utang tersebut.
 | Tombol | Fungsinya |
 | --- | --- |
 | <kbd>R</kbd> | Rekonsiliasi |
-| <kbd>N</kbd> | Akun, operasi berulang, atau target baru di tab yang terbuka; jumlah pada formulir cepat di Insidental |
+| <kbd>N</kbd> | Akun, operasi berulang atau insidental, atau target baru di tab yang terbuka |
 | <kbd>Enter</kbd> | Dalam formulir: pindah ke kolom berikutnya; pada kolom terakhir, menyimpan |
 | <kbd>Esc</kbd> | Menutup dialog |
 
@@ -176,10 +195,11 @@ Pada layar sentuh, petunjuk tombol tidak ditampilkan.
   `src/app/template.html` memiliki `default-src 'none'` dan `connect-src 'none'`; WebAssembly
   diizinkan untuk SQLite (`'wasm-unsafe-eval'`), `blob:` untuk unduhan ekspor. Proses build
   berhenti jika ada `src` atau `href` eksternal apa pun, dan CI memeriksanya lagi.
-- Data disimpan dalam IndexedDB browser ini: satu rekaman yang menyimpan byte basis data
-  SQLite, ditulis utuh setelah setiap perubahan, sehingga penyimpanan tidak pernah setengah
-  selesai. `localStorage` hanya menyimpan bahasa, tema, tab yang terbuka, grup yang dilipat,
-  periode grafik, dan jeda setelah PIN yang salah.
+- Data disimpan dalam IndexedDB browser ini: satu rekaman per basis data yang menyimpan byte
+  SQLite-nya, ditulis utuh setelah setiap perubahan, sehingga penyimpanan tidak pernah setengah
+  selesai, serta satu rekaman berisi daftar basis data. `localStorage` hanya menyimpan bahasa,
+  tema, tab yang terbuka, grup yang dilipat, periode grafik, dan jeda setelah PIN yang salah;
+  `sessionStorage` menyimpan basis data mana yang dibuka tab ini.
 - Membaca basis data atau berkas yang diimpor memeriksa setiap kolom: nilai yang rusak
   digantikan oleh nilai bawaannya, bukan menghentikan aplikasi.
 - Setelah penyimpanan pertama, aplikasi meminta browser untuk mempertahankan penyimpanannya
@@ -188,7 +208,14 @@ Pada layar sentuh, petunjuk tombol tidak ditampilkan.
   berkas-berkas browser: data tidak dienkripsi. Hanya hash-nya yang disimpan (PBKDF2 dengan
   garam), di antara pengaturan dalam basis data, sehingga sebuah ekspor membawanya dan meminta
   PIN yang sama di mana pun diimpor. PIN yang terlupa tidak dapat dipulihkan: "Lupa PIN?"
-  menghapus basis data dan memulai yang baru dan kosong.
+  menghapus basis data dan memulai yang baru dan kosong — hanya setelah nama basis data diketik,
+  agar anak yang menekan-nekan tombol tidak menghapusnya.
+- Untuk salinan yang disimpan di folder cloud atau flash disk, "Ekspor terenkripsi…" menulis
+  berkas SQLite yang dienkripsi dengan kata sandi minimal 8 karakter: AES-256-GCM dengan kunci
+  yang diturunkan oleh PBKDF2-SHA-256 (600.000 iterasi, garam acak). Tanpa kata sandi, tidak ada
+  yang bisa membuka berkas ini — termasuk Cashflow — dan kata sandi yang terlupa tidak dapat
+  dipulihkan. Mengimpornya akan meminta kata sandi. Data di browser tetap seperti semula, di
+  balik PIN.
 
 ## Terjemahan
 
@@ -304,8 +331,9 @@ src/core/             tanpa DOM: pengujian menjalankannya di Node
   flows.ts            operasi sebagai pergerakan uang antar akun dan mata uang
   reconcile.ts        saldo yang diharapkan dan sebenarnya, potretnya, uang tak tercatat dan lajunya
   forecast.ts         kurva ke depan, kapan uang habis, kapan sebuah ambang batas tercapai
-  goals.ts            ambang batas, kemajuan, dan tanggal sebuah target
+  goals.ts            ambang batas, kemajuan, dan tanggal sebuah target, menurut urutan prioritas
   pin.ts              PIN basis data: hash yang diberi garam, pemeriksaannya, jeda setelah yang salah
+  encryption.ts       ekspor yang dienkripsi dengan kata sandi: AES-256-GCM, kunci dari PBKDF2
   state.ts            tipe-tipe status, memeriksa yang dibaca, migrasi dokumen lama
   db.ts               status dalam SQLite: skema dan migrasinya, satu transaksi per penyimpanan
   sqlite.ts           sql.js dengan WebAssembly-nya disematkan
@@ -315,19 +343,20 @@ src/app/              halamannya: berkas tunggal dan PWA
   styles.css          palet, tema terang dan gelap, tata letak ponsel
   main.ts             mulai, tab, menggambar, pintasan
   store.ts            status dalam memori, disimpan ke SQLite dan IndexedDB sesaat setelah tiap perubahan
-  storage.ts          IndexedDB: byte basis data, handle berkas salinan otomatis; persist()
+  storage.ts          IndexedDB: byte dan handle berkas salinan otomatis tiap basis data, daftarnya; persist()
+  databases.ts        beberapa basis data: daftarnya, pilihan saat masuk, berpindah, kartunya di Pengaturan
   lock.ts             layar yang meminta PIN, pertanyaan tentang basis data baru, kartunya di Pengaturan
   prefs.ts            localStorage: bahasa, tema, tab, grup yang dilipat, periode grafik
   accounts.ts         tab Akun, laporan, riwayat, rekonsiliasi lama
   account-dialog.ts   membuat, mengedit, mengarsipkan, dan menghapus akun dan utang
   reconcile-form.ts   formulir rekonsiliasi
   recurring.ts        tab Berulang dan formulirnya; versi-versi operasi
-  oneoff.ts           tab Insidental dan formulir cepatnya
+  oneoff.ts           tab Insidental, filter periodenya, dan formulirnya
   op-fields.ts        kolom yang dipakai bersama oleh operasi: jenis, jumlah, akun atau mata uang, transfer
-  goals.ts            tab Target, Dibeli
+  goals.ts            tab Target: daftar menurut prioritas, menyeret, Dibeli
   chart.ts            grafik perkiraan, SVG dibuat manual
-  settings.ts         tab Pengaturan: mata uang dan kurs, perkiraan, bahasa, tema, data, PIN
-  backup.ts           ekspor dan impor (JSON dan SQLite), salinan otomatis
+  settings.ts         tab Pengaturan: mata uang dan kurs, perkiraan, bahasa, tema, data, basis data, PIN
+  backup.ts           ekspor dan impor (JSON, SQLite, terenkripsi), menghapus basis data, salinan otomatis
   update.ts           pembaruan PWA
   ui.ts, dom.ts       dialog, toast, kolom; membangun DOM
   format.ts, inputs.ts  jumlah dan tanggal dalam bahasa antarmuka; kolom jumlah
@@ -351,7 +380,8 @@ build/                hasil build; build/pages/ adalah PWA untuk GitHub Pages
   kemudian menyatakannya di bagian atas dan bekerja hanya di memori: ekspor datanya, atau
   gunakan aplikasi yang sudah dipasang.
 - Bunga pinjaman tidak dimodelkan; itu adalah pengeluaran rutin yang Anda tambahkan sendiri.
-- Setiap target diukur sendiri-sendiri: membeli satu tidak mengurangi yang lain.
+- Target dibeli satu demi satu, sesuai urutannya: target murah yang lebih rendah dalam daftar
+  menunggu target-target di atasnya, meskipun sebenarnya sudah bisa dibeli sekarang.
 
 ## Lisensi
 

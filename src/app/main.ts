@@ -11,16 +11,17 @@ import { emptyState } from '../core/state';
 import { renderAccounts } from './accounts';
 import { openAccount } from './account-dialog';
 import { startAutoCopy, stopAutoCopy, onAutoCopyChange } from './backup';
+import { chooseAnother, chooseDatabase, currentName, onListChange, several } from './databases';
 import { h } from './dom';
 import { renderGoals, openGoal } from './goals';
 import { nav } from './nav';
 import { askPin, locked, unlock } from './lock';
-import { focusQuickAmount, renderOneOff } from './oneoff';
+import { openOneOff, renderOneOff } from './oneoff';
 import { type Tab, TABS, prefs, savePrefs } from './prefs';
 import { openReconcile } from './reconcile-form';
 import { openRecurring, renderRecurring } from './recurring';
 import { applyLanguageAndTheme, renderSettings } from './settings';
-import { keepData } from './storage';
+import { keepData, openStorage, useDatabase } from './storage';
 import { boot, flush, getState, hasPendingSave, onChange, onOvertaken, onSaveFailed, replaceNow } from './store';
 import { justUpdated, startUpdates, updateState } from './update';
 import { dialogOpen, toast } from './ui';
@@ -104,6 +105,13 @@ function render(): void {
   window.scrollTo(0, scroll);
   const dot = document.getElementById('update-dot');
   if (dot) dot.hidden = updateState().kind !== 'ready';
+  // With several databases, the open one's name beside the app's: a click goes back to the list.
+  const database = document.getElementById('database-name');
+  if (database) {
+    database.hidden = !several();
+    database.textContent = several() ? currentName() : '';
+    database.title = t('databases', 'Choose another database');
+  }
 }
 
 function go(tab: Tab): void {
@@ -130,8 +138,12 @@ tabs.addEventListener('click', (event) => {
   if (tab && TABS.includes(tab)) go(tab);
 });
 
+document.getElementById('database-name')!.addEventListener('click', () => void chooseAnother());
+
 document.addEventListener('keydown', (event) => {
   if (event.metaKey || event.ctrlKey || event.altKey || event.isComposing || dialogOpen() || locked()) return;
+  // The list of databases, or a PIN, before the page is there.
+  if (document.getElementById('app')!.classList.contains('app--starting')) return;
   const target = event.target as HTMLElement;
   if (target.closest('input, textarea, select, [contenteditable]')) return;
   const key = event.key.toLowerCase();
@@ -142,7 +154,7 @@ document.addEventListener('keydown', (event) => {
     event.preventDefault();
     if (prefs.tab === 'accounts') openAccount(null, 'asset');
     else if (prefs.tab === 'recurring') openRecurring(null);
-    else if (prefs.tab === 'oneoff') focusQuickAmount();
+    else if (prefs.tab === 'oneoff') openOneOff(null);
     else if (prefs.tab === 'goals') openGoal(null);
   }
 });
@@ -163,8 +175,8 @@ addEventListener('beforeunload', (event) => {
 });
 
 /**
- * A new, empty database in place of this one: a forgotten PIN, or "New
- * database" in Settings. The automatic copy is let go first, or the empty
+ * A new, empty database in place of this one: a forgotten PIN, or "Delete this
+ * database" in Settings with no other. The automatic copy is let go first, or the empty
  * database would be written over the last copy of the old one.
  */
 async function startAnew(): Promise<boolean> {
@@ -193,7 +205,9 @@ async function start(): Promise<void> {
   applyLanguage();
   let started;
   try {
-    started = await boot(localCurrency());
+    const persistent = await openStorage();
+    useDatabase(await chooseDatabase());
+    started = await boot(localCurrency(), persistent);
   } catch (error) {
     document.getElementById('starting')!.textContent = t('app', 'The database could not be opened: {error}', { error: String(error) });
     return;
@@ -202,7 +216,7 @@ async function start(): Promise<void> {
   document.getElementById('starting')!.hidden = true;
   // Where nothing is kept, every start is a first one: the question would come each time, and its answer go.
   let fresh = started.fresh && started.persistent;
-  if (getState().pin && (await unlock()) === 'anew') {
+  if (getState().pin && (await unlock(currentName(), several() ? () => void chooseAnother() : undefined)) === 'anew') {
     if (!(await startAnew())) {
       // Not written (or another window saved first): what is stored is still the old database, and it asks for its PIN again.
       location.reload();
@@ -210,8 +224,13 @@ async function start(): Promise<void> {
     }
     fresh = true;
   }
-  if (fresh) await askPin();
+  if (fresh) {
+    // A new database starts where its first account is added.
+    savePrefs({ tab: 'accounts' });
+    await askPin();
+  }
   onChange(render);
+  onListChange(render);
   onOvertaken(() => toast(t('app', 'Another window of the app saved first: this one now shows its data, and the last change made here was not kept.'), 'error'));
   onSaveFailed(() => toast(t('app', 'The changes could not be saved in this browser. Export the data to keep it.'), 'error'));
   if (!started.persistent) {

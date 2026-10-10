@@ -48,8 +48,9 @@ its own window.
 5. On **Recurring**, add the salary, rent, subscriptions, the card's monthly payment — daily,
    weekly, monthly or yearly. On **One-off**, add what the regular ones do not cover: a
    purchase, a bonus, a planned holiday.
-6. Every week or two, reconcile again. The report tells you what went unaccounted, how long
-   the money lasts, and the goals on **Goals** tell you when they can be bought.
+6. Every week or two, reconcile again. The report tells you what went unaccounted (and offers
+   to plan for it if it keeps happening), how long the money lasts, and the goals on **Goals**
+   tell you when they can be bought.
 
 ### On a phone
 
@@ -86,13 +87,19 @@ money went (another account, or spent) so that nothing goes unaccounted either.
 
 The forecast starts from the last reconciliation and adds every operation since — that is
 "expected now". From there it goes a day at a time to the horizon (five years by default):
-the recurring operations, the planned one-offs and, unless switched off, the average pace of
-unaccounted spending (the unaccounted money of the reconciliations in the last 90 days, over
-their days). Unaccounted income is not counted on. "Money lasts until" is the first moment
-the money on the accounts reaches zero; if personal money (the accounts minus the debts) goes
-below zero earlier, that date comes second. If neither happens within the horizon, the report
-says the money lasts longer — or, if it grows, by how much a month. A goal's date is the
-first moment the forecast reaches its threshold.
+the recurring operations and the planned one-offs, nothing else. "Money lasts until" is the
+first moment the money on the accounts reaches zero; if personal money (the accounts minus the
+debts) goes below zero earlier, that date comes second. If neither happens within the horizon,
+the report says the money lasts longer — or, if it grows, by how much a month. Goals are bought
+in their order, the top one first: a goal's date is the first moment, no earlier than the goal
+above it, when the forecast reaches its threshold plus the prices of the goals above.
+
+Unaccounted money is not planned for on its own: a lost wallet or a one-off repair should not
+make every month ahead poorer. The report shows its average pace instead — the unaccounted
+money of the reconciliations in the 90 days up to the last one, over their days — and, for
+spending, offers to add it as a daily recurring expense with no account. Once it is added,
+the forecast counts on it like on any other operation, and the next reconciliations show only
+what is unaccounted beyond it. Unaccounted income is not counted on.
 
 ### Fees, and why a debt's fee makes it larger
 
@@ -126,21 +133,29 @@ transfer to the debt.
   in force from a moment and until a date; the 31st in a short month is its last day, and 29
   February in a common year is the 28th. Times are local, so a daily 09:00 stays at 09:00
   across the clock change.
-- One-off operations with a quick form: the cursor in the amount, Enter saves, the last account
-  used.
+- One-off operations in a form behind a button (or <kbd>N</kbd>): the cursor in the amount, Enter
+  saves, the last account used. The list opens on what the next reconciliation takes in; a
+  filter shows the interval between two past reconciliations, everything, or dates from–to,
+  with what the operations shown come to.
 - Transfers between accounts in different currencies, with the amount credited; a transfer to a
   debt pays it off.
 - The forecast chart for a week, a month, 3 or 6 months or a year: personal money, money on the
   accounts, the zero line and the goals; a crosshair with the values, and the same numbers as a
   table.
 - Goals bought "with money to spare" (personal money at least the price plus a margin) or "as a
-  share" (the price at most a part of personal money); Bought records the expense.
+  share" (the price at most a part of personal money), in a list by priority: drag one higher to
+  buy it sooner. Bought records the expense.
 - A past reconciliation opens the Accounts tab as it was, with what it expected and what it
   found, and what was recorded in the interval.
-- Export and import as JSON or as the SQLite file itself; in Chrome and Edge, an automatic copy
-  written to a file of your choice after every change.
-- "New database…" in Settings: everything replaced by an empty database, after a warning that
-  offers an export and, with a PIN, asks for it.
+- Export and import as JSON or as the SQLite file itself, the latter also encrypted with a
+  password for a copy kept elsewhere; in Chrome and Edge, an automatic copy written to a file of
+  your choice after every change.
+- Several databases in one browser — for the family and for a business, say — each with its own
+  accounts, goals and PIN. With more than one, the app opens on their list, and the open one's
+  name is in the top bar (a click goes back to the list). A file is imported in place of the
+  open database or as a new one beside it.
+- "Delete this database…" in Settings, after a warning that offers an export and, with a PIN,
+  asks for it; the only database gives way to a new, empty one.
 - A four-digit PIN for the database, asked when it is created: the page shows nothing until it
   is typed, and each wrong one doubles the pause before the next try, from a second up to an hour.
 - Light and dark themes, 17 languages, right to left for Arabic and Urdu, a phone layout.
@@ -150,7 +165,7 @@ transfer to the debt.
 | Key | What it does |
 | --- | --- |
 | <kbd>R</kbd> | Reconcile |
-| <kbd>N</kbd> | A new account, recurring operation or goal on the open tab; the amount of the quick form on One-off |
+| <kbd>N</kbd> | A new account, recurring, one-off operation or goal on the open tab |
 | <kbd>Enter</kbd> | In a form: the next field; in the last one, save |
 | <kbd>Esc</kbd> | Close the dialog |
 
@@ -162,10 +177,11 @@ On a touch screen the key hints are not shown.
   `default-src 'none'` and `connect-src 'none'`; WebAssembly is allowed for SQLite
   (`'wasm-unsafe-eval'`), `blob:` for the export download. The build stops on any external
   `src` or `href`, and CI checks again.
-- The data lives in IndexedDB of this browser: one record holding the SQLite database's bytes,
-  written whole after every change, so a save is never half done. `localStorage` holds only the
-  language, the theme, the open tab, folded groups, the chart's period and the pause after a
-  wrong PIN.
+- The data lives in IndexedDB of this browser: one record per database holding its SQLite
+  bytes, written whole after every change, so a save is never half done, and one with the list
+  of databases. `localStorage` holds only the language, the theme, the open tab, folded groups,
+  the chart's period and the pause after a wrong PIN; `sessionStorage`, which database the tab
+  opened.
 - Reading the database or an imported file checks every field: a broken value is replaced by
   its default rather than stopping the app.
 - After the first save the app asks the browser to keep its storage
@@ -174,7 +190,13 @@ On a touch screen the key hints are not shown.
   files: the data is not encrypted. Only its hash is stored (PBKDF2 with a salt), among the
   settings in the database, so an export carries it and asks for the same PIN wherever it is
   imported. A forgotten PIN cannot be recovered: "Forgot the PIN?" deletes the database and
-  starts a new, empty one.
+  starts a new, empty one — once the database's name is typed, so a child pressing buttons
+  does not wipe it.
+- For a copy kept in a cloud folder or on a stick, "Export encrypted…" writes the SQLite file
+  encrypted with a password of at least 8 characters: AES-256-GCM with a key derived by
+  PBKDF2-SHA-256 (600 000 iterations, a random salt). Without the password nobody can open the
+  file — Cashflow included — and a forgotten one cannot be recovered. Importing it asks for the
+  password. The data in the browser stays as it was, behind the PIN.
 
 ## Translations
 
@@ -282,8 +304,9 @@ src/core/             no DOM: the tests run it in Node
   flows.ts            operations as movements of money between accounts and currencies
   reconcile.ts        expected and actual balances, the snapshot, unaccounted money and its pace
   forecast.ts         the curve ahead, when the money runs out, when a threshold is reached
-  goals.ts            a goal's threshold, progress and date
+  goals.ts            a goal's threshold, progress and date, in priority order
   pin.ts              the database's PIN: its salted hash, checking it, the pause after wrong ones
+  encryption.ts       an export encrypted with a password: AES-256-GCM, the key from PBKDF2
   state.ts            the state's types, checking what is read, migrations of old documents
   db.ts               the state in SQLite: the schema and its migrations, one transaction per save
   sqlite.ts           sql.js with its WebAssembly inlined
@@ -293,19 +316,20 @@ src/app/              the page: the single file and the PWA
   styles.css          palette, light and dark themes, the phone layout
   main.ts             start, tabs, drawing, shortcuts
   store.ts            the state in memory, saved to SQLite and IndexedDB a moment after each change
-  storage.ts          IndexedDB: the database's bytes, the automatic copy's file handle; persist()
+  storage.ts          IndexedDB: each database's bytes and automatic copy's file handle, their list; persist()
+  databases.ts        several databases: their list, the choice on entry, switching, the card in Settings
   lock.ts             the screen asking for the PIN, the question of a new database, its card in Settings
   prefs.ts            localStorage: language, theme, tab, folded groups, the chart's period
   accounts.ts         the Accounts tab, the report, the history, a past reconciliation
   account-dialog.ts   creating, editing, archiving and deleting accounts and debts
   reconcile-form.ts   the reconciliation form
   recurring.ts        the Recurring tab and its form; versions of operations
-  oneoff.ts           the One-off tab and its quick form
+  oneoff.ts           the One-off tab, its filter by period and its form
   op-fields.ts        the fields operations share: type, amount, account or currency, transfer
-  goals.ts            the Goals tab, Bought
+  goals.ts            the Goals tab: the list by priority, dragging, Bought
   chart.ts            the forecast chart, SVG by hand
-  settings.ts         the Settings tab: currencies and rates, forecast, language, theme, data, PIN
-  backup.ts           export and import (JSON and SQLite), the automatic copy
+  settings.ts         the Settings tab: currencies and rates, forecast, language, theme, data, databases, PIN
+  backup.ts           export and import (JSON, SQLite, encrypted), deleting a database, the automatic copy
   update.ts           the PWA's updates
   ui.ts, dom.ts       dialogs, toasts, fields; building the DOM
   format.ts, inputs.ts  amounts and dates in the interface language; the amount field
@@ -328,7 +352,8 @@ build/                the build output; build/pages/ is the PWA for GitHub Pages
   configurations and private windows do not — the page then says so at the top and works in
   memory only: export the data, or use the installed app.
 - Interest on loans is not modelled; it is a recurring expense you add.
-- Each goal is measured on its own: buying one is not taken out of the others.
+- Goals are bought one after another, in their order: a cheap goal lower in the list waits for
+  the ones above it, even when it could be bought now.
 
 ## License
 

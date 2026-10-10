@@ -63,6 +63,8 @@ try {
   await chrome.until(s, `!!document.querySelector('[data-key="pin-skip"]')`, 15000);
   await click('[data-key="pin-skip"]');
   await ready();
+  // The new database is saved after a pause: a reload before it would ask for the PIN again.
+  await sleep(800);
   // The sample goes in as a person would put it: Settings → Import.
   await open({ tab: 'settings' });
   const { root: document } = await chrome.send('DOM.getDocument', {}, s);
@@ -88,6 +90,13 @@ try {
   await shot('4-recurring');
   await open({ tab: 'oneoff' });
   await shot('5-oneoff');
+  await js(`(() => { const n = document.querySelector('[data-key="oneoff-filter"]'); n.value = 'dates'; n.dispatchEvent(new Event('change')); return true; })()`);
+  await sleep(200);
+  await shot('5b-oneoff-dates');
+  await click('[data-key="add-oneoff"]');
+  await sleep(300);
+  await shot('5c-oneoff-new');
+  await js(`document.querySelector('dialog').close(), true`);
   await open({ tab: 'goals' });
   await shot('6-goals');
   await open({ tab: 'settings' });
@@ -98,6 +107,8 @@ try {
   await shot('8b-dark-goals');
   await open({ tab: 'accounts', language: 'ar' });
   await shot('9-arabic');
+  await open({ tab: 'goals', language: 'ar' });
+  await shot('9b-arabic-goals');
 
   await viewport(390, 844, true);
   await open({ tab: 'accounts' });
@@ -106,6 +117,11 @@ try {
   await shot('11-phone-recurring');
   await open({ tab: 'oneoff' });
   await shot('12-phone-oneoff');
+  await js(`(() => { const n = document.querySelector('[data-key="oneoff-filter"]'); n.value = 'dates'; n.dispatchEvent(new Event('change')); return true; })()`);
+  await sleep(200);
+  await shot('12b-phone-oneoff-dates');
+  await open({ tab: 'goals' });
+  await shot('12c-phone-goals');
   await open({ tab: 'accounts' });
   await click('[data-key="reconcile"]');
   await sleep(300);

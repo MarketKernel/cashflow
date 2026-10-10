@@ -1,13 +1,16 @@
 /**
  * The Settings tab: the base currency, currencies and their rates, the
- * forecast, the language and theme, the data's export and import, the version.
+ * forecast, the language and theme, the data's export and import, the
+ * databases, the PIN, the version.
  */
 import { LANGUAGES, type Language, t, tn } from '../core/i18n';
 import { CURRENCY_CODE, changeBase, defaultDecimals, usedCurrencies } from '../core/state';
 import { DAY } from '../core/schedule';
 import {
-  autoCopyName, autoCopyPaused, canPickFiles, chooseAutoCopy, exportJson, exportSqlite, importFile, newDatabase, resumeAutoCopy, stopAutoCopy,
+  autoCopyName, autoCopyPaused, canPickFiles, chooseAutoCopy, deleteDatabase, exportEncrypted, exportJson, exportSqlite, importFile, resumeAutoCopy, stopAutoCopy,
 } from './backup';
+import { encryptionAvailable } from '../core/encryption';
+import { databasesSection } from './databases';
 import { h, icon } from './dom';
 import { date, localeTag } from './format';
 import { pinSection } from './lock';
@@ -157,7 +160,7 @@ function base(): HTMLElement {
 
 function forecast(): HTMLElement {
   const state = getState();
-  const numberField = (label: string, key: 'windowDays' | 'horizonYears' | 'remindDays', min: number, max: number, unit: string): HTMLElement => {
+  const numberField = (label: string, key: 'windowDays' | 'horizonYears' | 'remindDays', min: number, max: number, unit: string, hint?: string): HTMLElement => {
     const input = h('input', {
       type: 'number', min, max, step: 1, value: state.forecast[key], key: `forecast-${key}`, class: 'short-input',
       on: {
@@ -171,16 +174,11 @@ function forecast(): HTMLElement {
         },
       },
     });
-    return field(label, h('span', { class: 'with-unit' }, input, h('span', { class: 'muted' }, unit)));
+    return field(label, h('span', { class: 'with-unit' }, input, h('span', { class: 'muted' }, unit)), hint);
   };
-  const include = h('input', {
-    type: 'checkbox', checked: state.forecast.includeUnaccounted, key: 'forecast-include',
-    on: { change: () => change((s) => void (s.forecast.includeUnaccounted = include.checked)) },
-  });
   return card(t('settings', 'Forecast'),
-    h('label', { class: 'check' }, include, h('span', null, t('settings', 'Count on unaccounted spending at its average pace'))),
     h('div', { class: 'grid-3' },
-      numberField(t('settings', 'Averaging window'), 'windowDays', 7, 3650, t('settings', 'days')),
+      numberField(t('settings', 'Averaging window'), 'windowDays', 7, 3650, t('settings', 'days'), t('settings', 'For the pace of unaccounted money in the report.')),
       numberField(t('settings', 'Horizon'), 'horizonYears', 1, 30, t('settings', 'years')),
       numberField(t('settings', 'Remind to reconcile after'), 'remindDays', 1, 365, t('settings', 'days'))));
 }
@@ -203,7 +201,7 @@ function appearance(): HTMLElement {
 function data(): HTMLElement {
   const state = getState();
   const file = h('input', {
-    type: 'file', accept: '.json,.sqlite,.sqlite3,.db,application/json', hidden: true, id: 'import-file',
+    type: 'file', accept: '.json,.sqlite,.sqlite3,.db,.enc,application/json', hidden: true, id: 'import-file',
     on: {
       change: () => {
         const picked = file.files?.[0];
@@ -235,8 +233,8 @@ function data(): HTMLElement {
     h('div', { class: 'buttons' },
       h('button', { type: 'button', class: 'button', key: 'export-json', on: { click: () => void exportJson() } }, t('settings', 'Export JSON')),
       h('button', { type: 'button', class: 'button', key: 'export-sqlite', on: { click: () => void exportSqlite() } }, t('settings', 'Export SQLite')),
+      encryptionAvailable() ? h('button', { type: 'button', class: 'button', key: 'export-encrypted', on: { click: exportEncrypted } }, t('settings', 'Export encrypted…')) : null,
       h('button', { type: 'button', class: 'button', key: 'import', on: { click: () => file.click() } }, t('settings', 'Import…')),
-      h('button', { type: 'button', class: 'button button--danger', key: 'new-database', on: { click: newDatabase } }, t('settings', 'New database…')),
       file),
     autocopy);
 }
@@ -249,6 +247,7 @@ export function renderSettings(view: HTMLElement, now: number): void {
     forecast(),
     appearance(),
     data(),
+    databasesSection(h('button', { type: 'button', class: 'button button--danger', key: 'delete-database', on: { click: deleteDatabase } }, t('databases', 'Delete this database…'))),
     pinSection(),
     updateSection(),
   ].filter((section): section is HTMLElement => section !== null));

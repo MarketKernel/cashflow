@@ -79,12 +79,14 @@
     "Unaccounted money shows after the second reconciliation.": "未記録の資金は2回目の照合以降に表示されます。",
     "Expected now": "現在の見込み",
     "{diff} since the reconciliation": "照合からの変化：{diff}",
-    "No pace of unaccounted money yet: the forecast leaves it out until two reconciliations.": "未記録の資金の変化速度はまだ分かりません：2回の照合が済むまで予測には含まれません。",
-    "The pace of unaccounted money, {amount} a day, is left out of the forecast (Settings).": "未記録の資金の変化速度（1日あたり{amount}）は予測に含まれていません（設定）。",
     "Unaccounted income, {amount} a day, is not counted on in the forecast.": "未記録の収入（1日あたり{amount}）は予測に見込まれていません。",
-    "The forecast counts on {amount} a day unaccounted, the average of {count} intervals.": {
-      "other": "予測は1日あたり{amount}の未記録を見込んでおり、これは{count}区間の平均です。"
+    "Unaccounted on average: {day} a day, {month} a month ({count} intervals).": {
+      "other": "未記録の平均：1日あたり{day}、1か月あたり{month}（{count}区間）。"
     },
+    "The forecast does not count on it: it may have been a one-off. If it repeats, add it as a recurring expense and the forecast will plan for it.": "予測はこれを見込んでいません：一度限りだった可能性があるためです。繰り返すなら、定期支出として追加すれば予測がそれを見込みます。",
+    "Unaccounted spending": "未記録の支出",
+    "Add as a recurring expense": "定期支出として追加",
+    "Spending outside the accounts is planned as a recurring expense: the next reconciliation shows what goes unaccounted beyond it.": "口座の外の支出は定期支出として計画されています：次の照合はそれを超えて未記録になった分だけを示します。",
     "Report": "レポート"
   },
   "history": {
@@ -139,6 +141,16 @@
   },
   "backup": {
     "Exported": "エクスポートしました",
+    "Export encrypted": "暗号化してエクスポート",
+    "The SQLite file, encrypted with a password (AES-256). Without the password nobody can open it, Cashflow included: a forgotten password cannot be recovered.": "SQLiteファイルをパスワード（AES-256）で暗号化したものです。パスワードがないと、Cashflowを含め誰も開くことができません。パスワードを忘れると復元できません。",
+    "Password": "パスワード",
+    "The password again": "確認用パスワード",
+    "At least {count} characters": {
+      "other": "{count}文字以上"
+    },
+    "The two passwords differ": "2つのパスワードが一致しません",
+    "Export": "エクスポート",
+    "The file could not be written": "ファイルを書き込めませんでした",
     "This is not a Cashflow file": "これは Cashflow のファイルではありません",
     "{count} accounts": {
       "other": "{count}件の口座"
@@ -149,14 +161,21 @@
     "{count} reconciliations": {
       "other": "{count}回の照合"
     },
-    "Replace everything?": "すべて置き換えますか？",
-    "{file}: {summary}. Everything here now is replaced by it.": "{file}：{summary}。現在のすべてのデータがこれに置き換えられます。",
+    "Import the file": "ファイルをインポート",
+    "{file}: {summary}. It can replace everything in this database, or become a new database beside it.": "{file}：{summary}。このデータベースのすべてを置き換えるか、別の新しいデータベースにすることができます。",
+    "As a new database": "新しいデータベースとして",
     "Replace everything": "すべて置き換える",
     "Imported": "インポートしました",
-    "Every change is now copied to {file}": "今後の変更はすべて{file}にコピーされます",
-    "Create a new database?": "新しいデータベースを作成しますか？",
-    "Everything here is deleted for good: accounts, operations, reconciliations and goals. Export the data first if it may be needed.": "ここにあるものはすべて完全に削除されます：口座、取引、照合、目標。必要になりそうならまずデータをエクスポートしてください。",
-    "Delete and create": "削除して作成"
+    "An encrypted file": "暗号化されたファイル",
+    "The file is encrypted. Type its password to import it.": "このファイルは暗号化されています。インポートするにはパスワードを入力してください。",
+    "Wrong password, or the file is damaged": "パスワードが違うか、ファイルが壊れています",
+    "The file was encrypted by a newer version of Cashflow: open it there, or update this one": "このファイルはより新しいバージョンのCashflowで暗号化されています：そちらで開くか、こちらを更新してください。",
+    "This browser cannot open encrypted files": "このブラウザは暗号化されたファイルを開けません",
+    "Delete this database?": "このデータベースを削除しますか？",
+    "Everything here is deleted for good: accounts, operations, reconciliations and goals. A new, empty database takes its place. Export the data first if it may be needed.": "ここにあるものはすべて完全に削除されます：口座、取引、照合、目標。代わりに新しい空のデータベースが作成されます。必要になりそうならあらかじめエクスポートしてください。",
+    "{name} is deleted for good: its accounts, operations, reconciliations and goals. Export the data first if it may be needed.": "{name}は完全に削除されます：その口座、取引、照合、目標。必要になりそうならあらかじめエクスポートしてください。",
+    "Delete": "削除",
+    "Every change is now copied to {file}": "今後の変更はすべて{file}にコピーされます"
   },
   "time": {
     "today": "今日",
@@ -171,8 +190,10 @@
     "Not within the forecast horizon": "予測期間内に収まりません",
     "The forecast starts with the first reconciliation": "予測は最初の照合から始まります",
     "Can buy on {date}": "{date}に買えます",
-    "Move up": "上に移動",
-    "Move down": "下に移動",
+    "After the goals above, which take {amount}": "上の目標の後（合計{amount}）",
+    "Waits for {name}": "{name}待ち",
+    "Drag to change the order": "ドラッグして順序を変更",
+    "Priority {number}: drag, or move with the arrow keys": "優先度{number}：ドラッグするか、矢印キーで移動",
     "Edit": "編集",
     "Needed": "必要額",
     "Have now": "現在の額",
@@ -181,7 +202,7 @@
     "Bought": "購入済み",
     "Goals": "目標",
     "Goal": "目標",
-    "Each goal is measured against the same personal money: buying one is not taken out of another.": "どの目標も同じ純資金をもとに判定されます：ひとつ買っても、ほかの目標から差し引かれることはありません。",
+    "Goals are bought from the top down: each counts on the money the ones above it leave. Drag a goal to change the order.": "目標は上から順に購入されます。それぞれ、上にある目標が残したお金をもとにします。ドラッグすると順序を変更できます。",
     "Something to buy? Add it, with how much should be left over, and the forecast tells you when.": "何か買いたいものがありますか？それと、残しておきたい金額を追加すれば、いつ買えるか予測が教えてくれます。",
     "Reached ({count})": "達成済み（{count}）",
     "Delete": "削除",
@@ -234,14 +255,29 @@
     "Expense": "支出",
     "Transfer": "振替",
     "no account": "口座なし",
+    "Period": "期間",
+    "Before {date}": "{date}より前",
+    "Not reconciled yet: since {date}": "まだ照合されていません：{date}から",
+    "Not reconciled yet": "まだ照合されていません",
+    "Between reconciliations": "照合の間",
+    "All operations": "すべての操作",
+    "Dates…": "日付…",
+    "From": "開始日",
+    "To": "終了日",
+    "{count} operations:": {
+      "other": "{count}件の操作："
+    },
     "Planned for {date}": "{date}に予定",
     "Saved": "保存しました",
+    "Saved, outside the period shown": "保存しました：表示されている期間の外です",
     "One-off": "単発",
-    "Save": "保存",
+    "Operation": "操作",
     "Planned": "予定",
     "Done": "完了",
     "Nothing yet. Add what the regular operations do not cover: a purchase, a bonus, a transfer.": "まだ何もありません。定期操作でカバーされないもの――買い物、ボーナス、振替――を追加しましょう。",
+    "Nothing in this period.": "この期間には何もありません。",
     "One-off operation": "単発の操作",
+    "New one-off operation": "新しい単発の操作",
     "Delete": "削除",
     "Delete this operation?": "この操作を削除しますか？",
     "It is removed from the records.": "記録から削除されます。",
@@ -355,8 +391,8 @@
     "Totals are shown in": "合計の表示通貨：",
     "Add a currency below to pick it here.": "下で通貨を追加すると、ここで選べるようになります。",
     "Forecast": "予測",
-    "Count on unaccounted spending at its average pace": "未記録の支出を平均ペースで見込む",
     "Averaging window": "平均期間",
+    "For the pace of unaccounted money in the report.": "レポートに表示される未記録の資金の変化速度のためです。",
     "days": "日",
     "Horizon": "予測期間",
     "years": "年",
@@ -386,8 +422,8 @@
     },
     "Export JSON": "JSONをエクスポート",
     "Export SQLite": "SQLiteをエクスポート",
+    "Export encrypted…": "暗号化してエクスポート…",
     "Import…": "インポート…",
-    "New database…": "新しいデータベース…",
     "Settings": "設定"
   },
   "update": {
@@ -415,9 +451,13 @@
     "Wrong PIN": "暗証番号が違います",
     "Wrong PIN. Try again in {time}.": "暗証番号が違います。{time}後にもう一度お試しください。",
     "Forgot the PIN?": "暗証番号をお忘れですか？",
+    "Another database": "別のデータベース",
     "Start a new database?": "新しいデータベースを作成しますか？",
     "Without the PIN this database cannot be opened. A new, empty one takes its place: everything in this one is deleted for good.": "暗証番号がないとこのデータベースは開けません。代わりに新しい空のデータベースが作成され、このデータベースの内容はすべて完全に削除されます。",
     "Delete and start anew": "削除してやり直す",
+    "The name of the database": "データベースの名前",
+    "To delete it, type its name: {name}": "削除するには名前を入力してください：{name}",
+    "The name does not match": "名前が一致しません",
     "Current PIN": "現在の暗証番号",
     "New PIN": "新しい暗証番号",
     "The PIN again": "確認用暗証番号",
@@ -440,5 +480,26 @@
     "The PIN of the file": "ファイルの暗証番号",
     "The file is protected by a PIN of its own. Type it to import the file; it then becomes the PIN here.": "ファイルは専用の暗証番号で保護されています。ファイルをインポートするにはそれを入力してください。すると、それがここでの暗証番号になります。",
     "Import": "インポート"
+  },
+  "databases": {
+    "Main": "メイン",
+    "Type a name": "名前を入力してください",
+    "There is already a database with this name": "この名前のデータベースはすでにあります",
+    "Imported": "インポート済み",
+    "Name": "名前",
+    "Create": "作成",
+    "Choose a database": "データベースを選択",
+    "New database": "新しいデータベース",
+    "Database": "データベース",
+    "Databases": "データベース",
+    "Each database has its own accounts, operations, goals and PIN. With more than one, the app asks which to open when it starts.": "各データベースには、それぞれの口座、取引、目標、暗証番号があります。2つ以上ある場合、起動時にどれを開くか尋ねられます。",
+    "open": "使用中",
+    "Rename the database": "データベース名を変更",
+    "Save": "保存",
+    "Rename…": "名前を変更…",
+    "Open": "開く",
+    "New database…": "新しいデータベース…",
+    "Choose another database": "別のデータベースを選択",
+    "Delete this database…": "このデータベースを削除…"
   }
 }

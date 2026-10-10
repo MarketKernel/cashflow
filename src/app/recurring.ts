@@ -9,7 +9,7 @@
  */
 import { dateFormat, t } from '../core/i18n';
 import { perMonth } from '../core/schedule';
-import { type Every, type Recurring, type Schedule, type State, accountOf, activeRecurring, newId } from '../core/state';
+import { type Every, type OpType, type Recurring, type Schedule, type State, accountOf, activeRecurring, newId } from '../core/state';
 import { convert } from '../core/valuation';
 import { signedAmount } from './accounts';
 import { h, icon } from './dom';
@@ -139,13 +139,22 @@ export function renderRecurring(view: HTMLElement, now: number): void {
 
 const sameSchedule = (a: Schedule, b: Schedule): boolean => JSON.stringify(a) === JSON.stringify(b);
 
-export function openRecurring(op: Recurring | null): void {
+/** A new operation filled in beforehand, for the person to check and add. */
+export interface RecurringDraft {
+  name: string;
+  every: Every;
+  type: OpType;
+  amount: number;
+  currency: string;
+}
+
+export function openRecurring(op: Recurring | null, draft?: RecurringDraft): void {
   const state = getState();
   const now = Date.now();
   const started = op !== null && op.validFrom <= now;
-  let every: Every = op?.schedule.every ?? prefs.every;
-  const name = h('input', { type: 'text', value: op?.name ?? '', key: 'recurring-name', autocomplete: 'off', placeholder: t('recurring', 'Rent, salary, subscription…') });
-  const fields = opFields(state, op ?? {}, 'recurring', prefs.lastAccount);
+  let every: Every = op?.schedule.every ?? draft?.every ?? prefs.every;
+  const name = h('input', { type: 'text', value: op?.name ?? draft?.name ?? '', key: 'recurring-name', autocomplete: 'off', placeholder: t('recurring', 'Rent, salary, subscription…') });
+  const fields = opFields(state, op ?? draft ?? {}, 'recurring', prefs.lastAccount);
 
   const time = h('input', { type: 'time', value: op?.schedule.time ?? '09:00', key: 'recurring-time' });
   const weekdays: Array<[string, string]> = Array.from({ length: 7 }, (_, i) => (firstWeekday() + i) % 7).map((d) => [String(d), weekdayName(d)]);
@@ -292,5 +301,5 @@ export function openRecurring(op: Recurring | null): void {
     { label: op ? t('dialog', 'Save') : t('recurring', 'Add'), kind: 'primary', key: 'recurring-save', run: save },
   ], { wide: true });
   enterMovesOn([name, ...fields.inputs()], () => element.querySelector<HTMLButtonElement>('[data-key="recurring-save"]')?.click());
-  (op ? fields.amount.input : name).focus();
+  (op || draft ? fields.amount.input : name).focus();
 }

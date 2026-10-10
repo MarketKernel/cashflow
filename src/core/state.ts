@@ -124,7 +124,7 @@ export interface Goal {
 }
 
 export interface ForecastSettings {
-  includeUnaccounted: boolean;
+  /** The days of reconciliations the pace of unaccounted money is averaged over. */
   windowDays: number;
   horizonYears: number;
   remindDays: number;
@@ -144,7 +144,7 @@ export interface State {
   pin?: PinHash;
 }
 
-export const DEFAULT_FORECAST: ForecastSettings = { includeUnaccounted: true, windowDays: 90, horizonYears: 5, remindDays: 14 };
+export const DEFAULT_FORECAST: ForecastSettings = { windowDays: 90, horizonYears: 5, remindDays: 14 };
 
 /** Codes of 2–10 Latin letters and digits: USD, EUR, USDT, BTC. */
 export const CURRENCY_CODE = /^[A-Z0-9]{2,10}$/;
@@ -411,7 +411,6 @@ export function sanitizeState(input: unknown, now = 0): State {
     reconciliations,
     goals,
     forecast: {
-      includeUnaccounted: typeof forecast.includeUnaccounted === 'boolean' ? forecast.includeUnaccounted : DEFAULT_FORECAST.includeUnaccounted,
       windowDays: clamp(integer(forecast.windowDays, DEFAULT_FORECAST.windowDays), 7, 3650),
       horizonYears: clamp(integer(forecast.horizonYears, DEFAULT_FORECAST.horizonYears), 1, 30),
       remindDays: clamp(integer(forecast.remindDays, DEFAULT_FORECAST.remindDays), 1, 365),

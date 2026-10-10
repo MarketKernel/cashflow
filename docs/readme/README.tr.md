@@ -50,9 +50,9 @@ içinde, WebAssembly'ye derlenmiş SQLite). Aynı sayfa, kurulabilen ve kendi pe
 5. **Düzenli**'de maaşı, kirayı, abonelikleri, kartın aylık ödemesini ekleyin — günlük,
    haftalık, aylık veya yıllık olarak. **Tek seferlik**'te düzenli olanların kapsamadığını
    ekleyin: bir satın alma, bir prim, planlanan bir tatil.
-6. Her bir iki haftada bir yeniden mutabakat yapın. Rapor size neyin kayıt dışı kaldığını,
-   paranın ne kadar süre yeteceğini söyler; **Hedefler**'deki hedefler ise ne zaman
-   alınabileceklerini gösterir.
+6. Her bir iki haftada bir yeniden mutabakat yapın. Rapor size neyin kayıt dışı kaldığını
+   (tekrarlarsa bunun için plan yapmayı önerir), paranın ne kadar süre yeteceğini söyler;
+   **Hedefler**'deki hedefler ise ne zaman alınabileceklerini gösterir.
 
 ### Telefonda
 
@@ -90,13 +90,21 @@ böylece bu da kayıt dışı kalmaz.
 
 Tahmin, son mutabakattan başlar ve o zamandan beri gerçekleşen her işlemi ekler — bu "şu an
 beklenen" değerdir. Oradan itibaren ufka kadar (varsayılan olarak beş yıl) gün gün ilerler:
-düzenli işlemler, planlanan tek seferlik işlemler ve kapatılmadığı sürece kayıt dışı
-harcamanın ortalama hızı (son 90 gündeki mutabakatların kayıt dışı parası, gün sayısına
-bölünerek). Kayıt dışı gelir hesaba katılmaz. "Para şu tarihe kadar yeter", hesaplardaki
-paranın sıfıra ulaştığı ilk andır; kişisel para (hesaplar eksi borçlar) daha önce sıfırın
-altına inerse, o tarih ikinci sırada gösterilir. İkisi de ufuk içinde gerçekleşmezse rapor
-paranın daha uzun süre yeteceğini söyler — ya da para artıyorsa, ayda ne kadar arttığını. Bir
-hedefin tarihi, tahminin eşiğine ulaştığı ilk andır.
+yalnızca düzenli işlemler ve planlanan tek seferlik işlemler. "Para şu tarihe kadar yeter",
+hesaplardaki paranın sıfıra ulaştığı ilk andır; kişisel para (hesaplar eksi borçlar) daha önce
+sıfırın altına inerse, o tarih ikinci sırada gösterilir. İkisi de ufuk içinde gerçekleşmezse
+rapor paranın daha uzun süre yeteceğini söyler — ya da para artıyorsa, ayda ne kadar arttığını.
+Hedefler sıralarına göre alınır, en üsttekinden başlayarak: bir hedefin tarihi, kendinden
+öncekinden daha erken olmayan ve tahminin eşiğine, üstündeki hedeflerin fiyatları eklenmiş
+hâliyle ulaştığı ilk andır.
+
+Kayıt dışı para kendi başına plana dahil edilmez: kaybolan bir cüzdan ya da tek seferlik bir
+tamirat, önümüzdeki her ayı daha fakir göstermemelidir. Rapor bunun yerine ortalama hızını
+gösterir — son mutabakata kadarki 90 gündeki mutabakatların kayıt dışı parası, gün sayısına
+bölünerek — ve harcama için, bunu hesap olmadan günlük bir düzenli gider olarak eklemeyi
+önerir. Eklendikten sonra tahmin onu diğer her işlem gibi hesaba katar, bir sonraki
+mutabakatlar ise yalnızca bunun ötesinde kalan kayıt dışı miktarı gösterir. Kayıt dışı gelir
+hesaba katılmaz.
 
 ### Ücretler ve bir borcun ücreti onu neden büyütür
 
@@ -132,21 +140,29 @@ borca yapılan bir transfer olarak ekleyin.
   belirli bir andan itibaren ve bir tarihe kadar geçerli; kısa bir ayda 31'i o ayın son günü
   olur ve normal bir yılda 29 Şubat, 28'i olur. Saatler yereldir, bu yüzden günlük 09:00,
   saat değişiminde de 09:00 olarak kalır.
-- Hızlı bir formla tek seferlik işlemler: imleç tutar alanında, Enter kaydeder, son
-  kullanılan hesap hatırlanır.
+- Tek seferlik işlemler bir düğmenin (veya N tuşunun) arkasındaki bir formla: imleç tutar
+  alanında, Enter kaydeder, son kullanılan hesap. Liste, bir sonraki mutabakatın kapsayacağı
+  işlemlerle açılır; filtre iki mutabakat arasındaki dönemi, tüm işlemleri veya baştan sona
+  tarihleri, gösterilen işlemlerin toplamıyla birlikte gösterir.
 - Farklı para birimlerindeki hesaplar arasında, alacaklı tarafa geçen tutarla transferler;
   bir borca yapılan transfer onu kapatır.
 - Bir hafta, bir ay, 3 veya 6 ay ya da bir yıl için tahmin grafiği: kişisel para,
   hesaplardaki para, sıfır çizgisi ve hedefler; değerleri gösteren bir artı imleç ve aynı
   sayılar bir tablo olarak da.
 - "Para artacak şekilde" (kişisel para en az fiyat artı bir pay kadar) veya "pay olarak"
-  (fiyat kişisel paranın en fazla bir payı kadar) alınan hedefler; Alındı gideri kaydeder.
+  (fiyat kişisel paranın en fazla bir payı kadar) alınan hedefler, önceliğe göre bir listede:
+  birini yukarı sürüklemek onu daha erken alır. Alındı gideri kaydeder.
 - Geçmiş bir mutabakat, Hesaplar sekmesini o zamanki hâliyle açar: ne beklendiğini, ne
   bulunduğunu ve aradaki dönemde ne kaydedildiğini gösterir.
-- JSON olarak veya doğrudan SQLite dosyası olarak dışa ve içe aktarma; Chrome ve Edge'de, her
+- JSON olarak veya doğrudan SQLite dosyası olarak dışa ve içe aktarma, ikincisi başka bir yerde
+  tutulacak bir kopya için parolayla şifrelenmiş olarak da; Chrome ve Edge'de, her
   değişiklikten sonra seçtiğiniz bir dosyaya yazılan otomatik bir kopya.
-- Ayarlar'daki "Yeni veritabanı…": her şey, dışa aktarma sunan ve varsa PIN'i isteyen bir
-  uyarının ardından boş bir veritabanıyla değiştirilir.
+- Bir tarayıcıda birden çok veritabanı — örneğin biri aile için, biri de bir işletme için —
+  her birinin kendi hesapları, hedefleri ve PIN'i olur. Birden fazla olduğunda uygulama bunların
+  listesiyle açılır, ve açık olanın adı üst çubukta görünür (tıklamak listeye geri döner). Bir
+  dosya, açık veritabanının yerine ya da yanında yeni bir veritabanı olarak içe aktarılır.
+- Ayarlar'da "Bu veritabanını sil…": dışa aktarma sunan ve PIN varsa onu isteyen bir uyarının
+  ardından; tek veritabanı, yerini yeni, boş birine bırakır.
 - Veritabanı oluşturulduğunda istenen dört rakamlı bir PIN: PIN girilene kadar sayfa hiçbir şey
   göstermez, ve her yanlış PIN bir sonraki denemeden önceki bekleme süresini bir saniyeden bir
   saate kadar ikiye katlar.
@@ -157,7 +173,7 @@ borca yapılan bir transfer olarak ekleyin.
 | Tuş | Ne yapar |
 | --- | --- |
 | <kbd>R</kbd> | Mutabakat yap |
-| <kbd>N</kbd> | Açık sekmede yeni bir hesap, düzenli işlem veya hedef; Tek seferlik'te hızlı formun tutarı |
+| <kbd>N</kbd> | Açık sekmede yeni bir hesap, düzenli işlem, tek seferlik işlem veya hedef |
 | <kbd>Enter</kbd> | Bir formda: sonraki alana geçer; sonuncusunda kaydeder |
 | <kbd>Esc</kbd> | İletişim kutusunu kapatır |
 
@@ -169,10 +185,11 @@ Dokunmatik bir ekranda tuş ipuçları gösterilmez.
   Politikası'nda `default-src 'none'` ve `connect-src 'none'` bulunur; SQLite için
   WebAssembly'ye (`'wasm-unsafe-eval'`), dışa aktarma indirmesi için `blob:`'a izin verilir.
   Derleme, herhangi bir dış `src` veya `href` bulursa durur ve CI bunu tekrar kontrol eder.
-- Veriler bu tarayıcının IndexedDB'sinde yaşar: SQLite veritabanının baytlarını tutan tek bir
-  kayıt, her değişiklikten sonra bütün olarak yazılır, böylece bir kayıt asla yarım kalmaz.
-  `localStorage` yalnızca dili, temayı, açık sekmeyi, katlanmış grupları, grafiğin dönemini ve
-  yanlış bir PIN'den sonraki bekleme süresini tutar.
+- Veriler bu tarayıcının IndexedDB'sinde yaşar: her veritabanı için SQLite baytlarını tutan
+  birer kayıt, her değişiklikten sonra bütün olarak yazılır, böylece bir kayıt asla yarım
+  kalmaz, ve veritabanlarının listesini tutan bir kayıt daha. `localStorage` yalnızca dili,
+  temayı, açık sekmeyi, katlanmış grupları, grafiğin dönemini ve yanlış bir PIN'den sonraki
+  bekleme süresini tutar; `sessionStorage` ise sekmenin hangi veritabanını açtığını tutar.
 - Veritabanını veya içe aktarılan bir dosyayı okumak her alanı denetler: bozuk bir değer,
   uygulamayı durdurmak yerine varsayılanıyla değiştirilir.
 - İlk kayıttan sonra uygulama, tarayıcıdan depolama alanını korumasını ister
@@ -181,7 +198,13 @@ Dokunmatik bir ekranda tuş ipuçları gösterilmez.
   kopyalayan birini değil: veriler şifrelenmez. Yalnızca hash'i saklanır (bir tuzla birlikte
   PBKDF2), veritabanındaki ayarlar arasında, böylece bir dışa aktarma onu da taşır ve nereye
   aktarılırsa aktarılsın aynı PIN'i ister. Unutulan bir PIN kurtarılamaz: "PIN'i mi unuttunuz?"
-  veritabanını siler ve yeni, boş bir tane başlatır.
+  veritabanının adı yazıldıktan sonra onu siler ve yeni, boş bir tane başlatır — düğmelere basan
+  bir çocuk onu silmesin diye.
+- Bulut klasöründe veya bir bellekte tutulacak bir kopya için, "Şifreli dışa aktar…" SQLite
+  dosyasını en az 8 karakterlik bir parolayla şifreler: PBKDF2-SHA-256 ile türetilen bir
+  anahtarla (600 000 yineleme, rastgele bir tuz) AES-256-GCM. Parola olmadan dosyayı kimse
+  açamaz — Cashflow dahil — ve unutulan biri kurtarılamaz. İçe aktarmak parolayı ister.
+  Tarayıcıdaki veriler, PIN'in arkasında, olduğu gibi kalır.
 
 ## Çeviriler
 
@@ -294,8 +317,9 @@ src/core/             DOM yok: testler onu Node'da çalıştırır
   flows.ts            işlemler, hesaplar ve para birimleri arasındaki para hareketleri olarak
   reconcile.ts        beklenen ve gerçek bakiyeler, anlık görüntü, kayıt dışı para ve hızı
   forecast.ts         ilerideki eğri, paranın ne zaman biteceği, bir eşiğe ne zaman ulaşılacağı
-  goals.ts            bir hedefin eşiği, ilerlemesi ve tarihi
+  goals.ts            bir hedefin eşiği, ilerlemesi ve tarihi, öncelik sırasıyla
   pin.ts              veritabanının PIN'i: tuzlanmış hash'i, onun denetlenmesi, yanlışlardan sonraki bekleme
+  encryption.ts       parolayla şifrelenmiş bir dışa aktarma: AES-256-GCM, PBKDF2'den anahtar
   state.ts            durumun türleri, okunanın denetlenmesi, eski belgelerin göçleri
   db.ts               SQLite'taki durum: şema ve göçleri, her kayıtta bir işlem (transaction)
   sqlite.ts           WebAssembly'si satır içine gömülü sql.js
@@ -305,19 +329,20 @@ src/app/              sayfanın kendisi: tek dosya ve PWA
   styles.css          palet, açık ve koyu temalar, telefon düzeni
   main.ts             başlatma, sekmeler, çizim, kısayollar
   store.ts            bellekteki durum, her değişiklikten kısa bir süre sonra SQLite ve IndexedDB'ye kaydedilir
-  storage.ts          IndexedDB: veritabanının baytları, otomatik kopyanın dosya tanıtıcısı; persist()
+  storage.ts          IndexedDB: her veritabanının baytları ve otomatik kopyasının dosya tanıtıcısı, bunların listesi; persist()
+  databases.ts        birden çok veritabanı: bunların listesi, girişteki seçim, aralarında geçiş, Ayarlar'daki kartı
   lock.ts             PIN isteyen ekran, yeni bir veritabanı sorusu, Ayarlar'daki kartı
   prefs.ts            localStorage: dil, tema, sekme, katlanmış gruplar, grafiğin dönemi
   accounts.ts         Hesaplar sekmesi, rapor, geçmiş, geçmiş bir mutabakat
   account-dialog.ts   hesap ve borçları oluşturma, düzenleme, arşivleme ve silme
   reconcile-form.ts   mutabakat formu
   recurring.ts        Düzenli sekmesi ve formu; işlemlerin sürümleri
-  oneoff.ts           Tek seferlik sekmesi ve hızlı formu
+  oneoff.ts           Tek seferlik sekmesi, dönem filtresi ve formu
   op-fields.ts        işlemlerin paylaştığı alanlar: tür, tutar, hesap veya para birimi, transfer
-  goals.ts            Hedefler sekmesi, Alındı
+  goals.ts            Hedefler sekmesi: önceliğe göre liste, sürükleme, Alındı
   chart.ts            tahmin grafiği, elle çizilmiş SVG
-  settings.ts         Ayarlar sekmesi: para birimleri ve kurlar, tahmin, dil, tema, veriler, PIN
-  backup.ts           dışa ve içe aktarma (JSON ve SQLite), otomatik kopya
+  settings.ts         Ayarlar sekmesi: para birimleri ve kurlar, tahmin, dil, tema, veriler, veritabanları, PIN
+  backup.ts           dışa ve içe aktarma (JSON, SQLite, şifreli), bir veritabanını silme, otomatik kopya
   update.ts           PWA'nın güncellemeleri
   ui.ts, dom.ts       iletişim kutuları, bildirimler, alanlar; DOM'u oluşturma
   format.ts, inputs.ts  arayüz dilinde tutarlar ve tarihler; tutar alanı
@@ -341,7 +366,8 @@ build/                derleme çıktısı; build/pages/, GitHub Pages için PWA
   durumda üstte bunu belirtir ve yalnızca bellekte çalışır: verileri dışa aktarın veya kurulu
   uygulamayı kullanın.
 - Kredi faizleri modellenmez; eklediğiniz düzenli bir gider olarak ele alınır.
-- Her hedef kendi başına ölçülür: birini almak diğerlerinden düşülmez.
+- Hedefler birbiri ardına, sıralarına göre alınır: listede daha aşağıdaki ucuz bir hedef, şimdi
+  alınabilecek olsa bile, üstündekileri bekler.
 
 ## Lisans
 

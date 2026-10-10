@@ -49,8 +49,9 @@ página es también una PWA que se puede instalar y se ejecuta en su propia vent
 5. En **Recurrentes**, añade el salario, el alquiler, las suscripciones, el pago mensual de la
    tarjeta — diario, semanal, mensual o anual. En **Puntuales**, añade lo que las recurrentes no
    cubren: una compra, una bonificación, unas vacaciones planeadas.
-6. Cada semana o dos, concilia de nuevo. El informe te dice qué quedó sin registrar, cuánto dura
-   el dinero, y las metas en **Metas** te dicen cuándo se pueden comprar.
+6. Cada semana o dos, concilia de nuevo. El informe te dice qué quedó sin registrar (y te ofrece
+   planificarlo si se repite), cuánto dura el dinero, y las metas en **Metas** te dicen cuándo
+   se pueden comprar.
 
 ### En el móvil
 
@@ -88,13 +89,21 @@ cuenta, o gastado) para que tampoco quede nada sin registrar.
 
 La previsión empieza en la última conciliación y suma cada operación desde entonces — eso es lo
 "esperado ahora". Desde ahí avanza día a día hasta el horizonte (cinco años por defecto): las
-operaciones recurrentes, las puntuales planeadas y, salvo que se desactive, el ritmo medio del
-gasto no registrado (el dinero no registrado de las conciliaciones de los últimos 90 días,
-dividido entre sus días). El ingreso no registrado no se tiene en cuenta. "El dinero dura hasta"
-es el primer momento en que el dinero de las cuentas llega a cero; si el dinero propio (las
-cuentas menos las deudas) baja de cero antes, esa fecha aparece en segundo lugar. Si ninguna de
-las dos ocurre dentro del horizonte, el informe dice que el dinero dura más — o, si crece, cuánto
-al mes. La fecha de una meta es el primer momento en que la previsión alcanza su umbral.
+operaciones recurrentes y las puntuales planeadas, nada más. "El dinero dura hasta" es el primer
+momento en que el dinero de las cuentas llega a cero; si el dinero propio (las cuentas menos las
+deudas) baja de cero antes, esa fecha aparece en segundo lugar. Si ninguna de las dos ocurre
+dentro del horizonte, el informe dice que el dinero dura más — o, si crece, cuánto al mes. Las
+metas se compran en su orden, la de arriba primero: la fecha de una meta es el primer momento,
+no antes que la de la meta de arriba, en que la previsión alcanza su umbral más los precios de
+las metas de arriba.
+
+El dinero no registrado no se planifica por sí solo: una cartera perdida o una reparación
+puntual no deberían empobrecer cada mes por venir. En su lugar, el informe muestra su ritmo
+medio — el dinero no registrado de las conciliaciones de los 90 días hasta la última, dividido
+entre sus días — y, para los gastos, ofrece añadirlo como un gasto recurrente diario sin cuenta.
+Una vez añadido, la previsión cuenta con él como con cualquier otra operación, y las siguientes
+conciliaciones muestran solo lo que queda sin registrar más allá de eso. El ingreso no
+registrado no se tiene en cuenta.
 
 ### Las comisiones, y por qué la comisión de una deuda la hace mayor
 
@@ -130,21 +139,30 @@ como una transferencia a la deuda.
   o anuales, vigentes desde un momento y hasta una fecha; el 31 en un mes corto es su último día,
   y el 29 de febrero en un año común es el 28. Las horas son locales, así que una operación diaria
   a las 09:00 se mantiene a las 09:00 pese al cambio de hora.
-- Operaciones puntuales con un formulario rápido: el cursor en el importe, Enter guarda, la
-  última cuenta usada.
+- Operaciones puntuales en un formulario tras un botón (o <kbd>N</kbd>): el cursor en el
+  importe, Enter guarda, la última cuenta usada. La lista se abre con lo que recoge la próxima
+  conciliación; un filtro muestra el intervalo entre dos conciliaciones pasadas, todo, o fechas
+  desde–hasta, con el total de las operaciones mostradas.
 - Transferencias entre cuentas en monedas distintas, con el importe acreditado; una transferencia
   a una deuda la salda.
 - El gráfico de previsión para una semana, un mes, 3 o 6 meses o un año: dinero propio, dinero en
   las cuentas, la línea de cero y las metas; una mira con los valores, y los mismos números en
   una tabla.
 - Metas que se compran "con dinero de sobra" (el dinero propio al menos el precio más un margen)
-  o "como parte" (el precio como mucho una parte del dinero propio); Comprado registra el gasto.
+  o "como parte" (el precio como mucho una parte del dinero propio), en una lista por prioridad:
+  arrastra una más arriba para comprarla antes. Comprado registra el gasto.
 - Una conciliación pasada abre la pestaña Cuentas tal como estaba, con lo que esperaba y lo que
   encontró, y lo que se registró en el intervalo.
-- Exportación e importación como JSON o como el propio archivo SQLite; en Chrome y Edge, una
+- Exportación e importación como JSON o como el propio archivo SQLite, este último también
+  cifrado con una contraseña para una copia guardada en otro lugar; en Chrome y Edge, una
   copia automática escrita en un archivo de tu elección tras cada cambio.
-- "Nueva base de datos…" en Ajustes: todo se reemplaza por una base de datos vacía, tras una
-  advertencia que ofrece una exportación y, si hay un PIN, lo pide.
+- Varias bases de datos en un mismo navegador — una para la familia y otra para un negocio, por
+  ejemplo —, cada una con sus propias cuentas, metas y PIN. Con más de una, la aplicación se
+  abre en su lista, y el nombre de la abierta aparece en la barra superior (un clic vuelve a la
+  lista). Un archivo se importa en el lugar de la base de datos abierta o como una nueva junto a
+  ella.
+- "Eliminar esta base de datos…" en Ajustes, tras una advertencia que ofrece una exportación y,
+  si hay un PIN, lo pide; la única base de datos da paso a una nueva, vacía.
 - Un PIN de cuatro dígitos para la base de datos, pedido al crearla: la página no muestra nada
   hasta que se escribe, y cada PIN incorrecto duplica la pausa antes del siguiente intento,
   desde un segundo hasta una hora.
@@ -156,7 +174,7 @@ como una transferencia a la deuda.
 | Tecla | Qué hace |
 | --- | --- |
 | <kbd>R</kbd> | Conciliar |
-| <kbd>N</kbd> | Una cuenta, operación recurrente o meta nueva en la pestaña abierta; el importe del formulario rápido en Puntuales |
+| <kbd>N</kbd> | Una cuenta, operación recurrente, puntual o meta nueva en la pestaña abierta |
 | <kbd>Enter</kbd> | En un formulario: el siguiente campo; en el último, guarda |
 | <kbd>Esc</kbd> | Cierra el diálogo |
 
@@ -168,10 +186,11 @@ En una pantalla táctil las indicaciones de teclas no se muestran.
   `default-src 'none'` y `connect-src 'none'`; WebAssembly está permitido para SQLite
   (`'wasm-unsafe-eval'`), `blob:` para la descarga de la exportación. La compilación se detiene
   ante cualquier `src` o `href` externo, y la CI lo vuelve a comprobar.
-- Los datos viven en el IndexedDB de este navegador: un registro con los bytes de la base de
-  datos SQLite, escrito entero tras cada cambio, para que un guardado nunca quede a medias.
-  `localStorage` solo guarda el idioma, el tema, la pestaña abierta, los grupos plegados, el
-  periodo del gráfico y la pausa tras un PIN incorrecto.
+- Los datos viven en el IndexedDB de este navegador: un registro por cada base de datos con sus
+  bytes de SQLite, escrito entero tras cada cambio, para que un guardado nunca quede a medias, y
+  otro con la lista de bases de datos. `localStorage` solo guarda el idioma, el tema, la pestaña
+  abierta, los grupos plegados, el periodo del gráfico y la pausa tras un PIN incorrecto;
+  `sessionStorage`, qué base de datos abrió la pestaña.
 - Leer la base de datos o un archivo importado comprueba cada campo: un valor corrupto se
   sustituye por su valor por defecto en lugar de detener la aplicación.
 - Tras el primer guardado la aplicación pide al navegador que conserve su almacenamiento
@@ -180,7 +199,14 @@ En una pantalla táctil las indicaciones de teclas no se muestran.
   archivos del navegador: los datos no están cifrados. Solo se guarda su hash (PBKDF2 con una
   sal), entre los ajustes de la base de datos, así que una exportación lo lleva consigo y pide
   el mismo PIN dondequiera que se importe. Un PIN olvidado no se puede recuperar: "¿Olvidaste el
-  PIN?" elimina la base de datos y empieza una nueva, vacía.
+  PIN?" elimina la base de datos y empieza una nueva, vacía — solo una vez escrito el nombre de
+  la base de datos, para que un niño que pulse botones no la borre.
+- Para una copia guardada en una carpeta en la nube o en una memoria USB, "Exportar cifrado…"
+  escribe el archivo SQLite cifrado con una contraseña de al menos 8 caracteres: AES-256-GCM con
+  una clave derivada por PBKDF2-SHA-256 (600 000 iteraciones, una sal aleatoria). Sin la
+  contraseña nadie puede abrir el archivo — Cashflow incluido — y una olvidada no se puede
+  recuperar. Importarlo pide la contraseña. Los datos en el navegador siguen como estaban, tras
+  el PIN.
 
 ## Traducciones
 
@@ -292,8 +318,9 @@ src/core/             sin DOM: las pruebas lo ejecutan en Node
   flows.ts            operaciones como movimientos de dinero entre cuentas y monedas
   reconcile.ts        saldos esperados y reales, la fotografía, el dinero no registrado y su ritmo
   forecast.ts         la curva por delante, cuándo se acaba el dinero, cuándo se alcanza un umbral
-  goals.ts            el umbral, el progreso y la fecha de una meta
+  goals.ts            el umbral, el progreso y la fecha de una meta, en orden de prioridad
   pin.ts              el PIN de la base de datos: su hash salado, su comprobación, la pausa tras los incorrectos
+  encryption.ts       una exportación cifrada con una contraseña: AES-256-GCM, la clave a partir de PBKDF2
   state.ts            los tipos del estado, comprobación de lo leído, migraciones de documentos antiguos
   db.ts               el estado en SQLite: el esquema y sus migraciones, una transacción por guardado
   sqlite.ts           sql.js con su WebAssembly incrustado
@@ -303,19 +330,20 @@ src/app/              la página: el archivo único y la PWA
   styles.css          paleta, temas claro y oscuro, el diseño para móvil
   main.ts             arranque, pestañas, dibujo, atajos
   store.ts            el estado en memoria, guardado en SQLite e IndexedDB un instante después de cada cambio
-  storage.ts          IndexedDB: los bytes de la base de datos, el handle de archivo de la copia automática; persist()
+  storage.ts          IndexedDB: los bytes de cada base de datos y el handle de archivo de su copia automática, su lista; persist()
+  databases.ts        varias bases de datos: su lista, la elección al entrar, el cambio entre ellas, la tarjeta en Ajustes
   lock.ts             la pantalla que pide el PIN, la pregunta de una base de datos nueva, su tarjeta en Ajustes
   prefs.ts            localStorage: idioma, tema, pestaña, grupos plegados, periodo del gráfico
   accounts.ts         la pestaña Cuentas, el informe, el historial, una conciliación pasada
   account-dialog.ts   crear, editar, archivar y eliminar cuentas y deudas
   reconcile-form.ts   el formulario de conciliación
   recurring.ts        la pestaña Recurrentes y su formulario; versiones de las operaciones
-  oneoff.ts           la pestaña Puntuales y su formulario rápido
+  oneoff.ts           la pestaña Puntuales, su filtro por periodo y su formulario
   op-fields.ts        los campos que comparten las operaciones: tipo, importe, cuenta o moneda, transferencia
-  goals.ts            la pestaña Metas, Comprado
+  goals.ts            la pestaña Metas: la lista por prioridad, arrastrar, Comprado
   chart.ts            el gráfico de previsión, SVG escrito a mano
-  settings.ts         la pestaña Ajustes: monedas y tasas, previsión, idioma, tema, datos, PIN
-  backup.ts           exportación e importación (JSON y SQLite), la copia automática
+  settings.ts         la pestaña Ajustes: monedas y tasas, previsión, idioma, tema, datos, bases de datos, PIN
+  backup.ts           exportación e importación (JSON, SQLite, cifrado), eliminar una base de datos, la copia automática
   update.ts           las actualizaciones de la PWA
   ui.ts, dom.ts       diálogos, avisos, campos; construcción del DOM
   format.ts, inputs.ts  importes y fechas en el idioma de la interfaz; el campo de importe
@@ -339,7 +367,8 @@ build/                el resultado de la compilación; build/pages/ es la PWA pa
   página entonces lo avisa arriba y funciona solo en memoria: exporta los datos, o usa la
   aplicación instalada.
 - Los intereses de los préstamos no se modelan; son un gasto recurrente que añades tú.
-- Cada meta se mide por separado: comprar una no se descuenta de las demás.
+- Las metas se compran una tras otra, en su orden: una meta barata más abajo en la lista espera
+  a las de arriba, aunque pudiera comprarse ya.
 
 ## Licencia
 

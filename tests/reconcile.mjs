@@ -44,7 +44,34 @@ function example(op) {
   const pace = C.unaccountedRate(state, R2);
   check('the pace: −1 500 / 7 = −214.29 a day', round2(pace.perDay), -214.29);
   check('… from one interval of 7 days', [pace.intervals, pace.days], [1, 7]);
-  check('outside the window there is no pace', C.unaccountedRate(state, R2 + 91 * 86400000).perDay, 0);
+  check('the pace stays until the next reconciliation, however late', round2(C.unaccountedRate(state, R2 + 200 * 86400000).perDay), -214.29);
+  check('… but not before the reconciliation it comes from', C.unaccountedRate(state, R2 - 1).intervals, 0);
+  // A reconciliation 91 days on: the window of 90 days before it leaves the first interval out.
+  const R3 = R2 + 91 * 86400000;
+  state.reconciliations.push(C.reconcile(state, new Map([['mono', 2140000 - 91 * 30000]]), R3, 'r3'));
+  const late = C.unaccountedRate(state, R3);
+  check('… an interval that ends outside the window is left out', [late.intervals, late.days, round2(late.perDay)], [1, 91, 0]);
+}
+
+// Unaccounted spending added as a recurring expense with no account: the pace is learnt only after it.
+{
+  const state = example(spend());
+  state.reconciliations.push(C.reconcile(state, new Map([['mono', 2140000]]), R2, 'r2'));
+  check('nothing planned outside the accounts', C.plannedSince(state, R2), undefined);
+  const lost = { id: 'lost', seriesId: 'lost', type: 'expense', name: 'Unaccounted', amount: 21429, currency: 'UAH', schedule: { every: 'day', time: '09:00' }, validFrom: R2 + 3600000 };
+  state.recurring.push(lost);
+  const planned = C.plannedSince(state, R2 + 7200000);
+  check('planned: from when it was added', planned, lost.validFrom);
+  check('… the interval before it no longer counts', C.unaccountedRate(state, R2 + 7200000, planned).intervals, 0);
+  // A week on, the balance as both expenses lead one to expect, less 100 more.
+  const R3 = R2 + 7 * 86400000;
+  const expected = C.expect(state, R3).currencies.UAH;
+  check('… and the next reconciliation expects it to be spent', expected, 2140000 - 7 * 30000 - 7 * 21429);
+  state.reconciliations.push(C.reconcile(state, new Map([['mono', expected - 10000]]), R3, 'r3'));
+  const after = C.unaccountedRate(state, R3, C.plannedSince(state, R3));
+  check('… then only what goes beyond it: −100 over 6 days 23 hours', [after.intervals, round2(after.perDay * after.days)], [1, -100]);
+  check('a closed one plans nothing', C.plannedSince({ ...state, recurring: [spend(), { ...lost, validTo: R3 }] }, R3), undefined);
+  check('an expense on an account is not spending outside them', C.plannedSince({ ...state, recurring: [{ ...lost, accountId: 'mono' }] }, R3), undefined);
 }
 
 // Removed on 5 October at 12:00: four payments.

@@ -10,10 +10,12 @@
 import { t, tn } from '../core/i18n';
 import { type Forecast, forecast, reconciledNow } from '../core/forecast';
 import {
-  differences, expect, expectedBalance, inCurrentBase, lastReconciliation, snapshotTotals, unaccounted,
+  differences, expect, expectedBalance, inCurrentBase, lastReconciliation, plannedSince, snapshotTotals, unaccounted, unaccountedRate,
 } from '../core/reconcile';
 import { DAY, perMonth } from '../core/schedule';
-import { type Account, type Kind, type Reconciliation, type State, activeAccounts, changeBase, defaultDecimals, emptyState, usedCurrencies } from '../core/state';
+import {
+  type Account, type Kind, type Reconciliation, type State, activeAccounts, changeBase, decimalsOf, defaultDecimals, emptyState, usedCurrencies,
+} from '../core/state';
 import { type CurrencyGroup, valuate } from '../core/valuation';
 import { openAccount } from './account-dialog';
 import { renderChart } from './chart';
@@ -21,6 +23,7 @@ import { h, icon } from './dom';
 import { ago, date, dateTime, inBase, inCurrency, money, shortDate } from './format';
 import { nav } from './nav';
 import { prefs, savePrefs } from './prefs';
+import { openRecurring } from './recurring';
 import { change, getState } from './store';
 import { confirmDialog, field, select, toast } from './ui';
 
@@ -29,7 +32,18 @@ const MONTH = perMonth('day');
 
 /** A sum with its sign and colour: green above zero, red below. */
 export function signedAmount(text: string, value: number): HTMLElement {
-  return h('span', { class: value > 0.004 ? 'amount positive' : value < -0.004 ? 'amount negative' : 'amount' }, text);
+  return h('span', { class: `amount${tone(value)}` }, text);
+}
+
+/** Green for money, red for owing: a debt above zero is owed, below zero overpaid. */
+function tone(value: number, kind: Kind = 'asset'): string {
+  const own = kind === 'debt' ? -value : value;
+  return own > 0.004 ? ' positive' : own < -0.004 ? ' negative' : '';
+}
+
+/** Unaccounted money, either way, in orange: it is the thing to look into. */
+export function unaccountedAmount(text: string, value: number): HTMLElement {
+  return h('span', { class: Math.abs(value) > 0.004 ? 'amount attention' : 'amount' }, text);
 }
 
 interface GroupView {
@@ -48,7 +62,7 @@ function groupBlock({ state, group, editable, base, baseDecimals }: GroupView): 
     ...group.lines.map(({ account, balance, value }) => {
       const content = [
         h('span', { class: 'account-name' }, account.name, account.fee ? h('small', { class: 'fee' }, t('accounts', 'fee {fee} %', { fee: account.fee })) : null),
-        h('span', { class: 'account-balance' }, money(state, balance, account.currency)),
+        h('span', { class: `account-balance${tone(balance, account.kind)}` }, money(state, balance, account.currency)),
         group.currency === base ? null : h('span', { class: 'account-value muted' }, inCurrency(value, base, baseDecimals)),
       ];
       return h('li', null, editable
@@ -64,7 +78,7 @@ function groupBlock({ state, group, editable, base, baseDecimals }: GroupView): 
   const head = h('button', { type: 'button', class: 'group-head', 'aria-expanded': String(!collapsed), key: `group-${key}`, on: { click: toggle } },
     icon('chevron'),
     h('span', { class: 'group-code' }, group.currency),
-    h('span', { class: 'group-total' }, money(state, group.total, group.currency)),
+    h('span', { class: `group-total${tone(group.total, group.kind)}` }, money(state, group.total, group.currency)),
     group.currency === base ? null : h('span', { class: 'group-value muted' }, inCurrency(group.value, base, baseDecimals)));
   return h('div', { class: 'group' }, head, rows);
 }
@@ -82,13 +96,13 @@ function kindBlock(view: Omit<GroupView, 'group'>, groups: CurrencyGroup[], kind
     own.length
       ? h('div', { class: 'groups' }, ...own.map((group) => groupBlock({ ...view, group })))
       : h('p', { class: 'muted empty-line' }, kind === 'asset' ? t('accounts', 'No accounts yet.') : t('accounts', 'No debts.')),
-    own.length ? h('div', { class: 'card-total' }, h('span', null, totalLabel), h('strong', null, inCurrency(total, view.base, view.baseDecimals))) : null);
+    own.length ? h('div', { class: 'card-total' }, h('span', null, totalLabel), h('strong', { class: tone(total, kind).trim() }, inCurrency(total, view.base, view.baseDecimals))) : null);
 }
 
 function summary(personal: number, base: string, baseDecimals: number, caption: string): HTMLElement {
   return h('section', { class: 'card summary' },
     h('span', { class: 'summary-label' }, caption),
-    h('strong', { class: personal < 0 ? 'summary-value negative' : 'summary-value', 'data-test': 'personal' }, inCurrency(personal, base, baseDecimals)),
+    h('strong', { class: `summary-value${tone(personal)}`, 'data-test': 'personal' }, inCurrency(personal, base, baseDecimals)),
     h('span', { class: 'muted summary-note' }, t('accounts', 'Money on accounts minus debts')));
 }
 
@@ -116,6 +130,34 @@ function lastsUntil(state: State, f: Forecast): HTMLElement[] {
   return out;
 }
 
+/**
+ * The average pace of unaccounted money, as advice: the forecast does not
+ * count on it, since a loss may not happen again. Spending that does repeat
+ * becomes a recurring expense at the same pace, and the forecast plans for it;
+ * from then on the pace is what goes beyond it.
+ */
+function unaccountedAdvice(state: State, now: number): HTMLElement | null {
+  const planned = plannedSince(state, now);
+  const rate = unaccountedRate(state, now, planned);
+  if (rate.intervals === 0) {
+    return planned !== undefined && state.reconciliations.length >= 2
+      ? h('p', { class: 'report-note muted', 'data-test': 'pace' }, t('report', 'Spending outside the accounts is planned as a recurring expense: the next reconciliation shows what goes unaccounted beyond it.'))
+      : null;
+  }
+  const day = inBase(state, rate.perDay, { sign: true });
+  if (rate.perDay > 0) return h('p', { class: 'report-note muted', 'data-test': 'pace' }, t('report', 'Unaccounted income, {amount} a day, is not counted on in the forecast.', { amount: day }));
+  const daily = Math.round(-rate.perDay * 10 ** decimalsOf(state, state.base));
+  if (daily === 0) return null;
+  const month = inBase(state, rate.perDay * MONTH, { sign: true, whole: true });
+  return h('div', { class: 'advice', 'data-test': 'pace' },
+    h('p', null, tn('report', 'Unaccounted on average: {day} a day, {month} a month ({count} interval).', 'Unaccounted on average: {day} a day, {month} a month ({count} intervals).', rate.intervals, { day, month })),
+    h('p', { class: 'report-note muted' }, t('report', 'The forecast does not count on it: it may have been a one-off. If it repeats, add it as a recurring expense and the forecast will plan for it.')),
+    h('button', {
+      type: 'button', class: 'button button--small', key: 'add-unaccounted',
+      on: { click: () => openRecurring(null, { name: t('report', 'Unaccounted spending'), every: 'day', type: 'expense', amount: daily, currency: state.base }) },
+    }, icon('plus'), t('report', 'Add as a recurring expense')));
+}
+
 function report(state: State, f: Forecast | null, now: number): HTMLElement {
   const recs = state.reconciliations;
   const lines: HTMLElement[] = [];
@@ -137,7 +179,7 @@ function report(state: State, f: Forecast | null, now: number): HTMLElement {
     const amount = value ?? own;
     lines.push(h('div', { class: 'report-row' },
       h('span', null, t('report', 'Unaccounted, {from} – {to}', { from: shortDate(prev.at), to: shortDate(rec.at) })),
-      h('span', { 'data-test': 'unaccounted' }, signedAmount(shown(amount), amount),
+      h('span', { 'data-test': 'unaccounted' }, unaccountedAmount(shown(amount), amount),
         days > 0 ? h('small', { class: 'muted' }, ' ', t('report', '{amount} a month', { amount: shown((amount / days) * MONTH) })) : null)));
   } else {
     lines.push(h('div', { class: 'report-row muted' }, h('span', null, t('report', 'Unaccounted money shows after the second reconciliation.'))));
@@ -150,15 +192,8 @@ function report(state: State, f: Forecast | null, now: number): HTMLElement {
       h('span', null, t('report', 'Expected now')),
       h('span', { 'data-test': 'expected-now' }, h('strong', null, inBase(state, f.current.personal)), ' ',
         h('small', { class: 'muted' }, t('report', '{diff} since the reconciliation', { diff: inBase(state, diff, { sign: true }) })))));
-    const rate = f.rate;
-    lines.push(h('p', { class: 'report-note muted' },
-      rate.intervals === 0
-        ? t('report', 'No pace of unaccounted money yet: the forecast leaves it out until two reconciliations.')
-        : !state.forecast.includeUnaccounted
-          ? t('report', 'The pace of unaccounted money, {amount} a day, is left out of the forecast (Settings).', { amount: inBase(state, rate.perDay, { sign: true }) })
-          : rate.perDay > 0
-            ? t('report', 'Unaccounted income, {amount} a day, is not counted on in the forecast.', { amount: inBase(state, rate.perDay, { sign: true }) })
-            : tn('report', 'The forecast counts on {amount} a day unaccounted, the average of {count} interval.', 'The forecast counts on {amount} a day unaccounted, the average of {count} intervals.', rate.intervals, { amount: inBase(state, rate.perDay, { sign: true }) })));
+    const advice = unaccountedAdvice(state, now);
+    if (advice) lines.push(advice);
     lines.push(h('div', { class: 'lasts' }, ...lastsUntil(state, f)));
   }
   return h('section', { class: 'card report' }, h('h2', { class: 'card-title' }, t('report', 'Report')), ...lines);
@@ -179,7 +214,7 @@ function history(state: State): HTMLElement | null {
       return h('li', null, h('button', { type: 'button', class: 'history-row', key: `rec-${rec.id}`, on: { click: () => nav.snapshot(rec.id) } },
         h('span', { class: 'history-date' }, dateTime(rec.at)),
         h('span', { class: 'history-personal' }, personal === null ? inCurrency(totals.personal, rec.base, decimals) : inBase(state, personal)),
-        h('span', { class: 'history-unaccounted' }, isFirst ? h('span', { class: 'muted' }, t('history', 'first')) : signedAmount(u === null ? inCurrency(own, rec.base, decimals, { sign: true }) : inBase(state, u, { sign: true }), own)),
+        h('span', { class: 'history-unaccounted' }, isFirst ? h('span', { class: 'muted' }, t('history', 'first')) : unaccountedAmount(u === null ? inCurrency(own, rec.base, decimals, { sign: true }) : inBase(state, u, { sign: true }), own)),
         icon('chevron')));
     })));
 }
@@ -333,7 +368,7 @@ function renderSnapshot(view: HTMLElement, current: State, rec: Reconciliation):
           prev
             ? h('div', { class: 'report-row' },
                 h('span', null, t('report', 'Unaccounted, {from} – {to}', { from: shortDate(prev.at), to: shortDate(rec.at) })),
-                h('span', { 'data-test': 'snapshot-unaccounted' }, signedAmount(inCurrency(own, rec.base, baseDecimals, { sign: true }), own)))
+                h('span', { 'data-test': 'snapshot-unaccounted' }, unaccountedAmount(inCurrency(own, rec.base, baseDecimals, { sign: true }), own)))
             : h('p', { class: 'muted' }, t('snapshot', 'The first reconciliation: there was nothing to compare it with.')),
           h('div', { class: 'table-wrap' }, h('table', { class: 'table compare' },
             h('thead', null, h('tr', null,
@@ -348,7 +383,7 @@ function renderSnapshot(view: HTMLElement, current: State, rec: Reconciliation):
                 h('th', { scope: 'row' }, code),
                 h('td', null, inCurrency((rec.expected[code] ?? 0) / 10 ** d, code, d)),
                 h('td', null, inCurrency((rec.actual[code] ?? 0) / 10 ** d, code, d)),
-                h('td', null, signedAmount(inCurrency(diff / 10 ** d, code, d, { sign: true }), diff)));
+                h('td', null, unaccountedAmount(inCurrency(diff / 10 ** d, code, d, { sign: true }), diff)));
             }))))))),
     h('section', { class: 'card' },
       h('h2', { class: 'card-title' }, t('snapshot', 'Recorded in the interval')),

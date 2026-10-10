@@ -201,7 +201,6 @@ export function writeState(db: Database, state: State, revisionNumber = 0): void
     insert(db, 'meta', [
       { key: 'schema', value: state.schema },
       { key: 'base', value: state.base },
-      { key: 'include_unaccounted', value: state.forecast.includeUnaccounted ? 1 : 0 },
       { key: 'window_days', value: state.forecast.windowDays },
       { key: 'horizon_years', value: state.forecast.horizonYears },
       { key: 'remind_days', value: state.forecast.remindDays },
@@ -324,7 +323,6 @@ export function readState(db: Database, now = 0): State {
     reconciliations,
     goals,
     forecast: {
-      includeUnaccounted: meta.has('include_unaccounted') ? meta.get('include_unaccounted') === 1 : undefined,
       windowDays: meta.get('window_days'),
       horizonYears: meta.get('horizon_years'),
       remindDays: meta.get('remind_days'),

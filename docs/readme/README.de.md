@@ -55,8 +55,8 @@ läuft.
    **Einmalig** hinzu, was die regelmäßigen nicht abdecken: einen Einkauf, einen Bonus, einen
    geplanten Urlaub.
 6. Gleichen Sie alle ein, zwei Wochen erneut ab. Der Bericht zeigt, was nicht erfasst wurde
-   und wie lange das Geld reicht, und die Ziele unter **Ziele** zeigen, wann sie gekauft werden
-   können.
+   (und bietet an, dafür zu planen, wenn es sich wiederholt), wie lange das Geld reicht, und
+   die Ziele unter **Ziele** zeigen, wann sie gekauft werden können.
 
 ### Auf dem Smartphone
 
@@ -97,14 +97,21 @@ Konto, oder ausgegeben), damit auch dabei nichts unerfasst bleibt.
 
 Die Prognose beginnt beim letzten Abgleich und addiert jede Buchung seitdem — das ist „jetzt
 erwartet". Von dort geht sie Tag für Tag bis zum Horizont (standardmäßig fünf Jahre): die
-wiederkehrenden Buchungen, die geplanten einmaligen und, sofern nicht abgeschaltet, das
-durchschnittliche Tempo nicht erfasster Ausgaben (das nicht erfasste Geld der Abgleiche der
-letzten 90 Tage, auf deren Tage verteilt). Mit nicht erfassten Einnahmen wird nicht gerechnet.
-„Geld reicht bis" ist der erste Zeitpunkt, an dem das Geld auf den Konten null erreicht; sinkt
-das eigene Geld (die Konten abzüglich der Schulden) schon früher unter null, steht dieses
-Datum an zweiter Stelle. Tritt beides nicht innerhalb des Horizonts ein, sagt der Bericht, dass
-das Geld länger reicht — oder, wenn es wächst, um wie viel im Monat. Das Datum eines Ziels ist
-der erste Zeitpunkt, an dem die Prognose seinen Schwellenwert erreicht.
+wiederkehrenden Buchungen und die geplanten einmaligen, sonst nichts. „Geld reicht bis" ist der
+erste Zeitpunkt, an dem das Geld auf den Konten null erreicht; sinkt das eigene Geld (die
+Konten abzüglich der Schulden) schon früher unter null, steht dieses Datum an zweiter Stelle.
+Tritt beides nicht innerhalb des Horizonts ein, sagt der Bericht, dass das Geld länger reicht —
+oder, wenn es wächst, um wie viel im Monat. Ziele werden in ihrer Reihenfolge gekauft, das
+oberste zuerst: Das Datum eines Ziels ist der erste Zeitpunkt, frühestens der des Ziels darüber,
+an dem die Prognose seinen Schwellenwert plus die Preise der Ziele darüber erreicht.
+
+Nicht erfasstes Geld wird nicht von sich aus eingeplant: ein verlorenes Portemonnaie oder eine
+einmalige Reparatur sollte nicht jeden kommenden Monat ärmer machen. Stattdessen zeigt der
+Bericht sein durchschnittliches Tempo — das nicht erfasste Geld der Abgleiche in den 90 Tagen
+bis zum letzten, auf deren Tage verteilt — und bietet für Ausgaben an, es als tägliche
+wiederkehrende Ausgabe ohne Konto hinzuzufügen. Ist sie einmal hinzugefügt, rechnet die
+Prognose damit wie mit jeder anderen Buchung, und die nächsten Abgleiche zeigen nur noch, was
+darüber hinaus nicht erfasst ist. Mit nicht erfassten Einnahmen wird nicht gerechnet.
 
 ### Gebühren, und warum die Gebühr einer Schuld sie größer macht
 
@@ -141,21 +148,31 @@ und die Rückzahlung selbst als Überweisung an die Schuld.
   kürzeren Monat ist dessen letzter Tag, und der 29. Februar in einem Gemeinjahr ist der 28.
   Die Uhrzeiten sind lokal, sodass ein tägliches 09:00 Uhr auch über die Zeitumstellung hinweg
   um 09:00 Uhr bleibt.
-- Einmalige Buchungen mit einem Schnellformular: der Cursor im Betragsfeld, Enter speichert,
-  das zuletzt verwendete Konto.
+- Einmalige Buchungen in einem Formular hinter einer Schaltfläche (oder <kbd>N</kbd>): der
+  Cursor im Betragsfeld, Enter speichert, das zuletzt verwendete Konto. Die Liste öffnet mit
+  dem, was der nächste Abgleich erfasst; ein Filter zeigt den Zeitraum zwischen zwei
+  vergangenen Abgleichen, alles, oder Daten von–bis, mit der Summe der angezeigten Buchungen.
 - Überweisungen zwischen Konten in unterschiedlichen Währungen, mit dem gutgeschriebenen
   Betrag; eine Überweisung an eine Schuld tilgt sie.
 - Das Prognosediagramm für eine Woche, einen Monat, 3 oder 6 Monate oder ein Jahr: eigenes
   Geld, Geld auf den Konten, die Nulllinie und die Ziele; ein Fadenkreuz mit den Werten, und
   dieselben Zahlen als Tabelle.
 - Ziele, gekauft „mit Geld übrig" (eigenes Geld mindestens der Preis plus ein Spielraum) oder
-  „als Anteil" (der Preis höchstens ein Teil des eigenen Geldes); Gekauft erfasst die Ausgabe.
+  „als Anteil" (der Preis höchstens ein Teil des eigenen Geldes), in einer Liste nach Priorität:
+  ein Ziel nach oben ziehen, um es früher zu kaufen. Gekauft erfasst die Ausgabe.
 - Ein vergangener Abgleich öffnet den Tab Konten so, wie er damals war, mit dem, was erwartet
   und was vorgefunden wurde, und was im Zeitraum erfasst wurde.
-- Export und Import als JSON oder als die SQLite-Datei selbst; in Chrome und Edge eine
-  automatische Kopie, die nach jeder Änderung in eine Datei Ihrer Wahl geschrieben wird.
-- „Neue Datenbank…" in den Einstellungen: alles wird durch eine leere Datenbank ersetzt, nach
-  einer Warnung, die einen Export anbietet und, falls eine PIN gesetzt ist, danach fragt.
+- Export und Import als JSON oder als die SQLite-Datei selbst, Letztere auch verschlüsselt mit
+  einem Passwort für eine anderswo aufbewahrte Kopie; in Chrome und Edge eine automatische Kopie,
+  die nach jeder Änderung in eine Datei Ihrer Wahl geschrieben wird.
+- Mehrere Datenbanken in einem Browser — etwa eine für die Familie und eine für ein Geschäft —,
+  jede mit eigenen Konten, Zielen und einer eigenen PIN. Bei mehr als einer öffnet die App mit
+  deren Liste, und der Name der geöffneten steht in der oberen Leiste (ein Klick führt zurück
+  zur Liste). Eine Datei wird anstelle der geöffneten Datenbank importiert oder als neue
+  daneben.
+- „Diese Datenbank löschen…" in den Einstellungen, nach einer Warnung, die einen Export anbietet
+  und, falls eine PIN gesetzt ist, danach fragt; die einzige Datenbank weicht dabei einer neuen,
+  leeren.
 - Eine vierstellige PIN für die Datenbank, abgefragt bei ihrer Erstellung: die Seite zeigt
   nichts, bis sie eingegeben ist, und jede falsche verdoppelt die Pause bis zum nächsten
   Versuch, von einer Sekunde bis zu einer Stunde.
@@ -167,7 +184,7 @@ und die Rückzahlung selbst als Überweisung an die Schuld.
 | Taste | Wirkung |
 | --- | --- |
 | <kbd>R</kbd> | Abgleichen |
-| <kbd>N</kbd> | Ein neues Konto, eine neue wiederkehrende Buchung oder ein neues Ziel auf dem offenen Tab; der Betrag des Schnellformulars unter Einmalig |
+| <kbd>N</kbd> | Ein neues Konto, eine wiederkehrende, einmalige Buchung oder ein neues Ziel auf dem offenen Tab |
 | <kbd>Enter</kbd> | In einem Formular: das nächste Feld; im letzten speichert es |
 | <kbd>Esc</kbd> | Schließt den Dialog |
 
@@ -179,10 +196,11 @@ Auf einem Touchscreen werden die Tastenhinweise nicht angezeigt.
   `default-src 'none'` und `connect-src 'none'`; WebAssembly ist für SQLite erlaubt
   (`'wasm-unsafe-eval'`), `blob:` für den Export-Download. Der Build bricht bei jedem externen
   `src` oder `href` ab, und CI prüft es erneut.
-- Die Daten liegen in der IndexedDB dieses Browsers: ein Datensatz mit den Bytes der
-  SQLite-Datenbank, nach jeder Änderung vollständig neu geschrieben, sodass ein Speichern nie
-  halb fertig ist. `localStorage` enthält nur die Sprache, das Design, den offenen Tab,
-  eingeklappte Gruppen, den Zeitraum des Diagramms und die Pause nach einer falschen PIN.
+- Die Daten liegen in der IndexedDB dieses Browsers: ein Datensatz pro Datenbank mit deren
+  SQLite-Bytes, nach jeder Änderung vollständig neu geschrieben, sodass ein Speichern nie halb
+  fertig ist, sowie einer mit der Liste der Datenbanken. `localStorage` enthält nur die Sprache,
+  das Design, den offenen Tab, eingeklappte Gruppen, den Zeitraum des Diagramms und die Pause
+  nach einer falschen PIN; `sessionStorage`, welche Datenbank der Tab geöffnet hat.
 - Beim Lesen der Datenbank oder einer importierten Datei wird jedes Feld geprüft: ein defekter
   Wert wird durch seinen Standardwert ersetzt, statt die App anzuhalten.
 - Nach dem ersten Speichern bittet die App den Browser, seinen Speicher zu behalten
@@ -191,7 +209,14 @@ Auf einem Touchscreen werden die Tastenhinweise nicht angezeigt.
   Browsers kopiert: die Daten sind nicht verschlüsselt. Gespeichert wird nur ihr Hash (PBKDF2
   mit einem Salt), unter den Einstellungen in der Datenbank, sodass ein Export ihn mitführt und
   überall, wohin er importiert wird, dieselbe PIN verlangt. Eine vergessene PIN lässt sich nicht
-  wiederherstellen: „PIN vergessen?" löscht die Datenbank und beginnt eine neue, leere.
+  wiederherstellen: „PIN vergessen?" löscht die Datenbank und beginnt eine neue, leere — erst,
+  wenn ihr Name eingetippt ist, damit ein Kind, das auf Knöpfe drückt, sie nicht löscht.
+- Für eine Kopie in einem Cloud-Ordner oder auf einem Stick schreibt „Verschlüsselt
+  exportieren…" die SQLite-Datei verschlüsselt mit einem Passwort aus mindestens 8 Zeichen:
+  AES-256-GCM mit einem Schlüssel, der mit PBKDF2-SHA-256 abgeleitet wird (600 000 Durchläufe,
+  ein zufälliges Salt). Ohne das Passwort kann niemand die Datei öffnen — Cashflow
+  eingeschlossen —, und ein vergessenes lässt sich nicht wiederherstellen. Beim Importieren wird
+  das Passwort abgefragt. Die Daten im Browser bleiben, wie sie waren, hinter der PIN.
 
 ## Übersetzungen
 
@@ -305,8 +330,9 @@ src/core/             kein DOM: die Tests laufen in Node
   flows.ts            Buchungen als Geldbewegungen zwischen Konten und Währungen
   reconcile.ts        erwartete und tatsächliche Salden, die Momentaufnahme, nicht erfasstes Geld und sein Tempo
   forecast.ts         die Kurve voraus, wann das Geld ausgeht, wann ein Schwellenwert erreicht wird
-  goals.ts            der Schwellenwert, Fortschritt und das Datum eines Ziels
+  goals.ts            der Schwellenwert, Fortschritt und das Datum eines Ziels, in Prioritätsreihenfolge
   pin.ts              die PIN der Datenbank: ihr gesalzener Hash, ihre Prüfung, die Pause nach falschen Versuchen
+  encryption.ts       ein mit einem Passwort verschlüsselter Export: AES-256-GCM, der Schlüssel aus PBKDF2
   state.ts            die Typen des Zustands, Prüfung des Gelesenen, Migrationen alter Dokumente
   db.ts               der Zustand in SQLite: das Schema und seine Migrationen, eine Transaktion je Speichern
   sqlite.ts           sql.js mit eingebettetem WebAssembly
@@ -316,19 +342,20 @@ src/app/              die Seite: die einzelne Datei und die PWA
   styles.css          Palette, helles und dunkles Design, das Smartphone-Layout
   main.ts             Start, Tabs, Zeichnen, Tastenkürzel
   store.ts            der Zustand im Speicher, kurz nach jeder Änderung in SQLite und IndexedDB gesichert
-  storage.ts          IndexedDB: die Bytes der Datenbank, das Datei-Handle der automatischen Kopie; persist()
+  storage.ts          IndexedDB: die Bytes jeder Datenbank und das Datei-Handle ihrer automatischen Kopie, ihre Liste; persist()
+  databases.ts        mehrere Datenbanken: ihre Liste, die Wahl beim Start, das Wechseln, die Karte in den Einstellungen
   lock.ts             der Bildschirm, der nach der PIN fragt, die Frage nach einer neuen Datenbank, ihre Karte in den Einstellungen
   prefs.ts            localStorage: Sprache, Design, Tab, eingeklappte Gruppen, der Zeitraum des Diagramms
   accounts.ts         der Tab Konten, der Bericht, die Historie, ein vergangener Abgleich
   account-dialog.ts   Anlegen, Bearbeiten, Archivieren und Löschen von Konten und Schulden
   reconcile-form.ts   das Abgleichformular
   recurring.ts        der Tab Wiederkehrend und sein Formular; Versionen von Buchungen
-  oneoff.ts           der Tab Einmalig und sein Schnellformular
+  oneoff.ts           der Tab Einmalig, sein Filter nach Zeitraum und sein Formular
   op-fields.ts        die gemeinsamen Felder der Buchungen: Typ, Betrag, Konto oder Währung, Überweisung
-  goals.ts            der Tab Ziele, Gekauft
+  goals.ts            der Tab Ziele: die Liste nach Priorität, Ziehen, Gekauft
   chart.ts            das Prognosediagramm, SVG von Hand
-  settings.ts         der Tab Einstellungen: Währungen und Kurse, Prognose, Sprache, Design, Daten, PIN
-  backup.ts           Export und Import (JSON und SQLite), die automatische Kopie
+  settings.ts         der Tab Einstellungen: Währungen und Kurse, Prognose, Sprache, Design, Daten, Datenbanken, PIN
+  backup.ts           Export und Import (JSON, SQLite, verschlüsselt), das Löschen einer Datenbank, die automatische Kopie
   update.ts           die Updates der PWA
   ui.ts, dom.ts       Dialoge, Toasts, Felder; Aufbau des DOM
   format.ts, inputs.ts  Beträge und Daten in der Sprache der Oberfläche; das Betragsfeld
@@ -354,8 +381,8 @@ build/                das Build-Ergebnis; build/pages/ ist die PWA für GitHub P
   Sie die installierte App.
 - Zinsen auf Kredite werden nicht abgebildet; sie sind eine wiederkehrende Ausgabe, die Sie
   hinzufügen.
-- Jedes Ziel wird für sich gemessen: der Kauf eines Ziels wird nicht von den anderen
-  abgezogen.
+- Ziele werden nacheinander gekauft, in ihrer Reihenfolge: ein günstigeres Ziel weiter unten in
+  der Liste wartet auf die darüber, selbst wenn es schon jetzt gekauft werden könnte.
 
 ## Lizenz
 

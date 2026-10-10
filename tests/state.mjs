@@ -50,7 +50,7 @@ check('a broken schedule gets a default', broken.recurring[0].schedule, { every:
 check('a transfer that lost an end is dropped; a negative amount too', broken.recurring.map((r) => r.id), ['r']);
 check('a one-off with a lost account keeps its currency', [broken.oneOff[0].accountId, broken.oneOff[0].currency, broken.oneOff[0].note], [undefined, 'GBP', '']);
 check('a goal share is at most 100 %', broken.goals[0].rule, { kind: 'share', percent: 100 });
-check('forecast settings within their bounds', broken.forecast, { includeUnaccounted: true, windowDays: 7, horizonYears: 30, remindDays: 3 });
+check('forecast settings within their bounds', broken.forecast, { windowDays: 7, horizonYears: 30, remindDays: 3 });
 
 // An account twice in one snapshot (SQLite takes one line per account) keeps its first line.
 {

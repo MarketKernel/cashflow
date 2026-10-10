@@ -5,8 +5,10 @@
  * income, the second reconciliation a week later with −1 500 unaccounted, a
  * deletion that leaves history alone, a past reconciliation and back, goals
  * of both kinds and "Bought", export → wipe → import, the database's PIN
- * and its pauses, a reload, the page opened from disk keeping its data, and a
- * forgotten PIN starting a new database.
+ * and its pauses, several databases (the list on entry, switching, renaming,
+ * an import as a new one, deleting), a reload, the page opened from disk
+ * keeping its data, and a forgotten PIN starting a new database once the
+ * database's name is typed.
  *
  * Time is not waited for: a script put in every document before the page's
  * own (Page.addScriptToEvaluateOnNewDocument) replaces Date.now() with the
@@ -252,7 +254,41 @@ try {
   await until(`!document.querySelector('dialog[open]')`);
   check('share 50 %: threshold 80,000', await text('[data-test="threshold"]'), 'UAH 80,000.00');
   check('share 50 %: 75.36 %', await text('[data-test="progress"]'), '75.36 %');
+
+  // A second goal waits for the first; dragged above it, it comes first.
+  await key('n');
+  await type('[data-key="goal-name"]', 'Mug');
+  await type('[data-key="goal-amount"]', '1000');
+  await click('[data-key="goal-save"]');
+  await until(`!document.querySelector('dialog[open]')`);
+  const goalOrder = () => js(`[...document.querySelectorAll('.goal .card-title')].map((n) => n.firstChild.textContent)`);
+  const mug = '.goal:nth-child(2)';
+  check('below the laptop: what it leaves, 20,285', await text(`${mug} [data-test="have"]`), 'UAH 20,285.00');
+  check('below the laptop: after it', await text(`${mug} [data-test="ahead"]`), 'After the goals above, which take UAH 40,000.00');
+  check('below a goal never reached: never either', await text(`${mug} [data-test="when"]`), 'Not within the forecast horizon');
+  check('… because it waits for it', await text(`${mug} [data-test="waits"]`), 'Waits for Laptop');
+  {
+    const centre = (selector) => js(`(() => { const n = document.querySelector(${q(selector)}); n.scrollIntoView({ block: 'center' }); const r = n.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; })()`);
+    const [, top] = await centre('.goal:first-child .card-title');
+    const [fx, fy] = await centre(`${mug} .goal-handle`);
+    const mouse = (type, px, py) => chrome.send('Input.dispatchMouseEvent', { type, x: px, y: py, button: 'left', buttons: type === 'mouseReleased' ? 0 : 1, clickCount: 1 }, s);
+    await mouse('mousePressed', fx, fy);
+    for (let step = 1; step <= 6; step += 1) await mouse('mouseMoved', fx, fy + ((top - 20 - fy) * step) / 6);
+    await mouse('mouseReleased', fx, top - 20);
+    await sleep(100);
+  }
+  check('dragged to the top', await goalOrder(), ['Mug', 'Laptop']);
+  check('on top it can be bought now', await text('.goal:first-child [data-test="when"]'), 'Can buy now');
+  check('the order is kept', await js(`document.querySelector('.goal:first-child .goal-rank').textContent`), '1');
+  await js(`document.querySelector('.goal:first-child .goal-handle').focus(), true`);
+  await key('ArrowDown');
+  check('the arrow key moves it back down', await goalOrder(), ['Laptop', 'Mug']);
+  check('… and the handle keeps the focus', await js(`document.activeElement?.dataset.key?.startsWith('goal-drag-') ?? false`), true);
   await shot('2-goals');
+  await click(`${mug} [data-key^="goal-edit-"]`);
+  await js(`[...document.querySelectorAll('dialog[open] button')].find((b) => b.textContent === 'Delete').click(), true`);
+  await click('[data-key="confirm"]');
+  await until(`document.querySelectorAll('.goal').length === 1`);
 
   // ---------------------------------------------------------------- a recurring expense and a one-off income
   await go('recurring');
@@ -267,20 +303,25 @@ try {
   check('daily: 30.44 payments a month', await text('[data-test="month-total"]'), 'A month: UAH 0.00 -UAH 9,131.06 = -UAH 9,131.06');
 
   await go('oneoff');
-  check('one-off: the cursor is in the amount', await js(`document.activeElement?.dataset.key`), 'quick-amount');
-  await click('[data-key="quick-type-income"]');
-  await type('[data-key="quick-amount"]', '4000+1000');
-  check('the arithmetic is shown', await text('.quick .amount-preview'), '= 5,000');
-  await type('[data-key="quick-date"]', '2026-10-03');
-  await type('[data-key="quick-note"]', 'Bonus');
+  check('one-off: an empty tab has no filter', await exists('[data-key="oneoff-filter"]'), false);
+  await key('n');
+  check('one-off: N opens the form, the cursor in the amount', [await dialogOpen(), await js(`document.activeElement?.dataset.key`)], [true, 'new-amount']);
+  await click('[data-key="new-type-income"]');
+  await type('[data-key="new-amount"]', '4000+1000');
+  check('the arithmetic is shown', await text('dialog[open] .amount-preview'), '= 5,000');
+  await type('[data-key="new-date"]', '2026-10-03');
+  await type('[data-key="new-note"]', 'Bonus');
   await key('Enter');
-  await until(`document.querySelectorAll('.op-row').length === 1`);
+  await until(`!document.querySelector('dialog[open]')`);
   check('the income is planned (it is 1 October)', await text('.card .card-title'), 'Planned');
   check('… for 5,000', await text('.op-row .op-amount'), '+UAH 5,000.00');
-  check('the form is empty again, the cursor in it', [await js(`document.querySelector('[data-key="quick-amount"]').value`), await js(`document.activeElement?.dataset.key`)], ['', 'quick-amount']);
-  check('… and still an income', await js(`document.querySelector('[data-key="quick-type-income"]').getAttribute('aria-checked')`), 'true');
-  await type('[data-key="quick-date"]', '2026-09-30');
-  check('a date before the reconciliation warns of the closed period', await js(`!document.querySelector('.quick .warning').hidden`), true);
+  check('… and in the period not reconciled yet', await text('[data-test="oneoff-total"]'), '1 operation: +UAH 5,000.00 UAH 0.00 = +UAH 5,000.00');
+  await click('[data-key="add-oneoff"]');
+  check('the next one is an income again', await js(`document.querySelector('[data-key="new-type-income"]').getAttribute('aria-checked')`), 'true');
+  await type('[data-key="new-date"]', '2026-09-30');
+  check('a date before the reconciliation warns of the closed period', await js(`!document.querySelector('dialog[open] .warning').hidden`), true);
+  await click('dialog[open] .dialog-head .icon-button');
+  await until(`!document.querySelector('dialog[open]')`);
 
   // ---------------------------------------------------------------- a week later: −1 500 unaccounted
   await setNow(at(2026, 10, 8, 10));
@@ -295,9 +336,36 @@ try {
   await until(`!document.querySelector('dialog[open]')`);
   check('unaccounted −1,500 in the report', (await text('[data-test="unaccounted"]'))?.startsWith('-UAH 1,500.00'), true);
   check('… −6,522 a month', (await text('[data-test="unaccounted"] small'))?.trim(), '-UAH 6,522.19 a month');
-  check('the pace is used', (await text('.report-note'))?.includes('-UAH 214.29 a day'), true);
+  check('the pace, as advice', (await text('[data-test="pace"] p'))?.trim(), 'Unaccounted on average: -UAH 214.29 a day, -UAH 6,522 a month (1 interval).');
+  check('… not in the forecast: expected now as reconciled', await js(`document.querySelector('[data-test="expected-now"] strong').textContent`), 'UAH 61,685.00');
+  await click('[data-key="add-unaccounted"]');
+  await until(`document.querySelector('dialog[open]')`);
+  check('… offered as a daily recurring expense', await js(`[document.querySelector('[data-key="recurring-name"]').value, document.querySelector('[data-key="recurring-amount"]').value, document.querySelector('[data-key="recurring-account"]').value, document.querySelector('[data-key="recurring-currency"]').value, document.querySelector('[data-key="recurring-every-day"]').getAttribute('aria-checked')]`), ['Unaccounted spending', '214.29', '', 'UAH', 'true']);
+  await click('dialog[open] .dialog-head .icon-button');
+  await until(`!document.querySelector('dialog[open]')`);
   check('history: −1,500 for the second', await text('.history-row .history-unaccounted'), '-UAH 1,500.00');
   await shot('3-accounts');
+
+  // The bonus is in the interval just reconciled: the open period is empty, the filter finds it.
+  await go('oneoff');
+  const filterText = () => js(`document.querySelector('[data-key="oneoff-filter"]').selectedOptions[0].textContent`);
+  const names = () => js(`[...document.querySelectorAll('.op-row .op-name')].map((n) => n.textContent)`);
+  check('one-off: not reconciled yet, by default', await filterText(), 'Not reconciled yet: since Oct 8, 2026');
+  check('… nothing in it', await text('.empty-line'), 'Nothing in this period.');
+  check('the interval of the last reconciliation is offered', await js(`[...document.querySelectorAll('[data-key="oneoff-filter"] optgroup option')].map((o) => o.textContent)`), ['Oct 1, 2026 – Oct 8, 2026']);
+  await choose('[data-key="oneoff-filter"]', await js(`document.querySelector('[data-key="oneoff-filter"] optgroup option').value`));
+  check('… and holds the bonus', await names(), ['Bonus']);
+  check('… not greyed out as closed', await exists('.op-row--closed'), false);
+  await choose('[data-key="oneoff-filter"]', 'dates');
+  check('dates: from the 1st of the month to today', await js(`['from', 'to'].map((end) => document.querySelector('[data-key="oneoff-filter-' + end + '"]').value)`), ['2026-10-01', '2026-10-08']);
+  check('… the bonus of the 3rd', await names(), ['Bonus']);
+  await type('[data-key="oneoff-filter-to"]', '2026-10-02');
+  check('… not when they end on the 2nd', await names(), []);
+  await type('[data-key="oneoff-filter-to"]', '2026-10-03');
+  check('… the last day is included', await names(), ['Bonus']);
+  await choose('[data-key="oneoff-filter"]', 'all');
+  check('all: the bonus, closed', [await names(), await exists('.op-row--closed')], [['Bonus'], true]);
+  await choose('[data-key="oneoff-filter"]', 'open');
 
   // ---------------------------------------------------------------- removing the expense leaves history alone
   await setNow(at(2026, 10, 9, 12));
@@ -311,8 +379,8 @@ try {
   check('deleted: gone from the list', await js(`document.querySelectorAll('.op-row').length`), 0);
   await go('accounts');
   check('history unchanged', await text('.history-row .history-unaccounted'), '-UAH 1,500.00');
-  // Expected now: 21 400, one payment (9 Oct 09:00) before the deletion, the pace for 26 hours.
-  check('expected now: one more payment and the pace', await js(`document.querySelector('[data-test="expected-now"] strong').textContent`), 'UAH 61,152.86');
+  // Expected now: 21 400 and one payment (9 Oct 09:00) before the deletion; unaccounted money is not projected.
+  check('expected now: one more payment', await js(`document.querySelector('[data-test="expected-now"] strong').textContent`), 'UAH 61,385.00');
 
   // ---------------------------------------------------------------- a past reconciliation, and back
   await click('.history-row');
@@ -376,7 +444,7 @@ try {
   await reload();
   await go('accounts');
   const before = await personal();
-  check('a reload keeps the data', before, 'UAH 21,152.86');
+  check('a reload keeps the data', before, 'UAH 21,385.00');
   await go('settings');
   let exports = 0;
   /** Presses an export button and returns the file it downloaded, moved aside so the next export does not take its place. */
@@ -402,6 +470,21 @@ try {
   check('the export: everything in it', [doc.schema, doc.base, doc.accounts.length, doc.reconciliations.length, doc.goals.length], [1, 'UAH', 5, 2, 1]);
   const sqlite = await exportOne('export-sqlite', '.sqlite');
   check('the SQLite export is an SQLite file', (await readFile(sqlite)).subarray(0, 15).toString(), 'SQLite format 3');
+  // Encrypted with a password: a short one and two different ones are refused.
+  await click('[data-key="export-encrypted"]');
+  await type('[data-key="export-password"]', 'short');
+  await type('[data-key="export-password-again"]', 'short');
+  await click('[data-key="export-encrypted-ok"]');
+  check('encrypted: a short password is refused', [await dialogOpen(), await exists('[data-key="export-password"].invalid')], [true, true]);
+  await type('[data-key="export-password"]', 'correct horse');
+  await type('[data-key="export-password-again"]', 'correct horsf');
+  await click('[data-key="export-encrypted-ok"]');
+  check('encrypted: two different passwords are refused', [await dialogOpen(), await exists('[data-key="export-password-again"].invalid')], [true, true]);
+  await shot('export-encrypted');
+  await type('[data-key="export-password-again"]', 'correct horse');
+  const encrypted = await exportOne('export-encrypted-ok', '.enc');
+  const sealed = await readFile(encrypted);
+  check('encrypted: our header, and nothing of SQLite to be seen', [sealed.subarray(0, 12).toString(), sealed.includes('SQLite format 3'), await dialogOpen()], ['CASHFLOW-ENC', false, false]);
 
   // Wipe: the database and the conveniences, as a new browser would be.
   await js(`new Promise((done) => { const r = indexedDB.deleteDatabase('cashflow'); r.onsuccess = r.onerror = r.onblocked = () => done(true); })`);
@@ -538,6 +621,123 @@ try {
   await until(`!document.querySelector('dialog[open]')`);
   await settle();
 
+  // ---------------------------------------------------------------- several databases
+  /** Something the page does reloads it: waits for the new page to be ready. */
+  const marked = () => js(`window.__before = true`);
+  const reloaded = async () => {
+    if (!(await until(`!window.__before`, 15000))) throw new Error('No reload');
+    await ready();
+    await sleep(150);
+  };
+  const accountNames = () => js(`[...document.querySelectorAll('.account-name')].map((n) => n.firstChild.textContent)`);
+  const picks = () => js(`[...document.querySelectorAll('[data-key="database-pick"]')].map((b) => b.textContent)`);
+  const pick = async (name) => {
+    await until(`[...document.querySelectorAll('[data-key="database-pick"]')].some((b) => b.textContent === ${q(name)})`, 15000);
+    await js(`[...document.querySelectorAll('[data-key="database-pick"]')].find((b) => b.textContent === ${q(name)}).click(), true`);
+  };
+  const storedKeys = () => js(`new Promise((done) => { const r = indexedDB.open('cashflow'); r.onsuccess = () => { const g = r.result.transaction('state').objectStore('state').getAllKeys(); g.onsuccess = () => { done(g.result.map(String).sort()); r.result.close(); }; }; })`);
+  await go('settings');
+  check('databases: one, no name in the bar', [await js(`document.querySelectorAll('.database-row').length`), await js(`document.getElementById('database-name').hidden`)], [1, true]);
+  await click('[data-key="database-add"]');
+  await type('[data-key="database-name"]', 'main');
+  await click('[data-key="database-name-save"]');
+  check('databases: a name in use is refused', [await dialogOpen(), await exists('[data-key="database-name"].invalid')], [true, true]);
+  await type('[data-key="database-name"]', 'Business');
+  await marked();
+  await click('[data-key="database-name-save"]');
+  check('databases: the new one opens, asking for its PIN', await until(`!window.__before && !!document.querySelector('[data-key="pin-skip"]')`, 15000), true);
+  await click('[data-key="pin-skip"]');
+  await ready();
+  check('… empty, its name in the bar', [await exists('.welcome'), await text('#database-name')], [true, 'Business']);
+  await click('[data-key="welcome-add"]');
+  await type('[data-key="account-name"]', 'Till');
+  await type('[data-key="account-opening"]', '500');
+  await click('[data-key="account-save"]');
+  await settle();
+  await reload();
+  check('databases: a reload stays in the same one', await accountNames(), ['Till']);
+  // A new window, or the installed app: no choice made yet in this tab.
+  await js(`sessionStorage.clear(), true`);
+  await chrome.send('Page.reload', {}, s);
+  check('databases: a new start opens on the list', await until(`document.querySelectorAll('[data-key="database-pick"]').length === 2`, 15000), true);
+  check('… with both names', await picks(), ['Main', 'Business']);
+  await shot('databases');
+  await pick('Main');
+  await ready();
+  await go('accounts');
+  check('databases: the first one, as it was', [await personal(), await text('#database-name')], [before, 'Main']);
+  await go('settings');
+  await marked();
+  await click('[data-key="database-open"]');
+  await reloaded();
+  await go('accounts');
+  check('databases: "Open" in Settings switches', await accountNames(), ['Till']);
+  await go('settings');
+  await click('[data-key="database-rename"]');
+  await type('[data-key="database-name"]', 'Shop');
+  await click('[data-key="database-name-save"]');
+  await js(`document.querySelector('.database-rows').scrollIntoView(), true`);
+  await shot('databases-settings');
+  check('databases: renamed', [await text('#database-name'), await js(`[...document.querySelectorAll('.database-row-name')].map((n) => n.firstChild.textContent)`)], ['Shop', ['Main', 'Shop']]);
+  // Its own PIN: the lock names the database and offers the others.
+  await click('[data-key="pin-set"]');
+  await type('[data-key="pin-new"]', '1234');
+  await type('[data-key="pin-again"]', '1234');
+  await click('[data-key="pin-save"]');
+  await until(`!document.querySelector('dialog[open]')`);
+  await sleep(350);
+  await chrome.send('Page.reload', {}, s);
+  check('databases: the PIN screen names the database', await until(`document.querySelector('[data-key="pin-database"]')?.textContent === 'Shop'`, 15000), true);
+  await type('[data-key="pin-unlock"]', '0000');
+  await until(`document.querySelector('.lock-message')?.textContent.startsWith('Wrong PIN')`, 3000);
+  await click('[data-key="pin-another"]');
+  await pick('Main');
+  await ready();
+  await go('accounts');
+  check('… and goes back to the list, where the other opens without it', await personal(), before);
+  const pauses = () => js(`Object.keys(localStorage).filter((k) => k.startsWith('cashflow-pin-wait')).length`);
+  check('databases: the wrong try\'s pause stays with its database', await pauses(), 1);
+  // The encrypted file, imported as a database of its own.
+  await go('settings');
+  await marked();
+  {
+    const { root: document } = await chrome.send('DOM.getDocument', {}, s);
+    const { nodeId } = await chrome.send('DOM.querySelector', { nodeId: document.nodeId, selector: '#import-file' }, s);
+    await chrome.send('DOM.setFileInputFiles', { nodeId, files: [encrypted] }, s);
+  }
+  check('encrypted: importing asks for the password', await until(`!!document.querySelector('[data-key="import-password"]')`, 3000), true);
+  await type('[data-key="import-password"]', 'correct horsf');
+  await click('[data-key="import-password-ok"]');
+  check('… a wrong one does not open it', await until(`!!document.querySelector('[data-key="import-password"].invalid')`, 5000), true);
+  await type('[data-key="import-password"]', 'correct horse');
+  await click('[data-key="import-password-ok"]');
+  await click('[data-key="import-new"]');
+  await reloaded();
+  await go('accounts');
+  check('databases: an import as a new database opens it', [await personal(), await text('#database-name')], [before, 'export-3']);
+  await go('settings');
+  check('… beside the others', await js(`document.querySelectorAll('.database-row').length`), 3);
+  await click('[data-key="delete-database"]');
+  check('databases: deleting one names it', (await text('dialog[open] .dialog-body p'))?.startsWith('export-3 is deleted for good'), true);
+  await marked();
+  await click('[data-key="delete-database-confirm"]');
+  check('… and the list comes up without it', await until(`!window.__before && document.querySelectorAll('[data-key="database-pick"]').length === 2`, 15000), true);
+  await pick('Shop');
+  await until(`!!document.querySelector('[data-key="pin-unlock"]')`, 15000);
+  await until(`!document.querySelector('[data-key="pin-unlock"]').disabled`, 5000);
+  await type('[data-key="pin-unlock"]', '1234');
+  await ready();
+  check('… and goes once that database is opened', await pauses(), 0);
+  await go('settings');
+  await click('[data-key="delete-database"]');
+  await type('[data-key="delete-database-pin"]', '1234');
+  await marked();
+  await click('[data-key="delete-database-confirm"]');
+  await reloaded();
+  await go('accounts');
+  check('databases: the one left opens with no list', [await personal(), await js(`document.getElementById('database-name').hidden`)], [before, true]);
+  check('… and nothing of the deleted ones stays stored', await storedKeys(), ['databases', 'sqlite']);
+
   // ---------------------------------------------------------------- the PWA: offline, and updates by the button
   // The same origin as the single file above, so the same data shows.
   await chrome.send('Page.navigate', { url: `${ORIGIN}/pages/` }, s);
@@ -644,6 +844,13 @@ try {
   await sleep(100);
   check('… and "Cancel" keeps it locked, the data in place', [await dialogOpen(), await exists('[data-key="pin-unlock"]')], [false, true]);
   await click('[data-key="pin-forgot"]');
+  check('forgot: the name to type is shown', (await text('dialog[open] .field-label'))?.endsWith(': Main'), true);
+  await click('[data-key="confirm"]');
+  check('forgot: nothing typed, nothing deleted', [await dialogOpen(), await exists('[data-key="forgot-name"].invalid')], [true, true]);
+  await type('[data-key="forgot-name"]', 'Mian');
+  await click('[data-key="confirm"]');
+  check('… nor with a wrong name', [await dialogOpen(), await exists('[data-key="forgot-name"].invalid')], [true, true]);
+  await type('[data-key="forgot-name"]', ' main ');
   await click('[data-key="confirm"]');
   check('forgot: the new database asks for a PIN', await until(`!!document.querySelector('[data-key="pin-create"]')`, 5000), true);
   await type('[data-key="pin-new"]', '4321');
@@ -665,24 +872,24 @@ try {
   check('forgot: the new PIN opens the new database', [await exists('.lock'), await exists('.welcome')], [false, true]);
   await go('accounts');
 
-  // "New database…" in Settings: a warning that offers an export, the current PIN, then the new database's question.
+  // "Delete this database…" in Settings, the only one: a warning that offers an export, the current PIN, then the new database's question.
   await click('[data-key="welcome-add"]');
   await type('[data-key="account-name"]', 'Doomed');
   await type('[data-key="account-opening"]', '1');
   await click('[data-key="account-save"]');
   await settle();
   await go('settings');
-  await click('[data-key="new-database"]');
-  check('new database: the warning offers an export and asks for the PIN', [await exists('[data-key="new-database-export"]'), await exists('[data-key="new-database-pin"]')], [true, true]);
-  const kept = JSON.parse(await readFile(await exportOne('new-database-export', '.json'), 'utf8'));
+  await click('[data-key="delete-database"]');
+  check('delete the only database: the warning offers an export and asks for the PIN', [await exists('[data-key="delete-database-export"]'), await exists('[data-key="delete-database-pin"]')], [true, true]);
+  const kept = JSON.parse(await readFile(await exportOne('delete-database-export', '.json'), 'utf8'));
   check('… the export works from the warning, which stays open', [kept.accounts.map((a) => a.name), await dialogOpen()], [['Doomed'], true]);
-  await shot('new-database');
-  await type('[data-key="new-database-pin"]', '0000');
-  await click('[data-key="new-database-confirm"]');
-  check('… a wrong PIN deletes nothing', await until(`!!document.querySelector('[data-key="new-database-pin"].invalid')`, 3000), true);
-  await type('[data-key="new-database-pin"]', '4321');
-  await click('[data-key="new-database-confirm"]');
-  check('new database: its PIN question comes up', await until(`!!document.querySelector('[data-key="pin-skip"]')`, 5000), true);
+  await shot('delete-database');
+  await type('[data-key="delete-database-pin"]', '0000');
+  await click('[data-key="delete-database-confirm"]');
+  check('… a wrong PIN deletes nothing', await until(`!!document.querySelector('[data-key="delete-database-pin"].invalid')`, 3000), true);
+  await type('[data-key="delete-database-pin"]', '4321');
+  await click('[data-key="delete-database-confirm"]');
+  check('delete the only database: a new one\'s PIN question comes up', await until(`!!document.querySelector('[data-key="pin-skip"]')`, 5000), true);
   await click('[data-key="pin-skip"]');
   check('… and it is empty, on Accounts', await until(`!!document.querySelector('.welcome')`, 3000), true);
   await reload();

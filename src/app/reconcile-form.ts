@@ -10,7 +10,7 @@ import { formatInput } from '../core/money';
 import { expect, expectedBalance, reconcile, unaccounted } from '../core/reconcile';
 import { type Account, type State, activeAccounts, decimalsOf } from '../core/state';
 import { rateOf, signed } from '../core/valuation';
-import { signedAmount } from './accounts';
+import { unaccountedAmount } from './accounts';
 import { h, fill } from './dom';
 import { date, dateTime, inBase, money } from './format';
 import { type AmountField, amountField } from './inputs';
@@ -74,7 +74,7 @@ export function openReconcile(): void {
       f.field.invalid(value === null && f.field.input.value.trim() !== '');
       // The difference as money: owing more is less money.
       const diff = value === null ? 0 : signed(f.account.kind, value) - signed(f.account.kind, f.expected);
-      fill(f.diff, diff === 0 ? '' : signedAmount(money(state, diff, f.account.currency, { sign: true }), diff));
+      fill(f.diff, diff === 0 ? '' : unaccountedAmount(money(state, diff, f.account.currency, { sign: true }), diff));
     }
     const s = withRates();
     const balances = entered();
@@ -87,7 +87,7 @@ export function openReconcile(): void {
       return;
     }
     const value = unaccounted(reconcile(s, balances, now, 'preview'));
-    fill(total, t('reconcile', 'Unaccounted since the last reconciliation:'), ' ', signedAmount(inBase(s, value, { sign: true }), value));
+    fill(total, t('reconcile', 'Unaccounted since the last reconciliation:'), ' ', unaccountedAmount(inBase(s, value, { sign: true }), value));
   };
 
   const rows = (kind: 'asset' | 'debt'): HTMLElement | null => {

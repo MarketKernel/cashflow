@@ -79,12 +79,14 @@
     "Unaccounted money shows after the second reconciliation.": "Uang tak tercatat muncul setelah rekonsiliasi kedua.",
     "Expected now": "Perkiraan sekarang",
     "{diff} since the reconciliation": "{diff} sejak rekonsiliasi",
-    "No pace of unaccounted money yet: the forecast leaves it out until two reconciliations.": "Belum ada laju uang tak tercatat: perkiraan mengabaikannya sampai ada dua rekonsiliasi.",
-    "The pace of unaccounted money, {amount} a day, is left out of the forecast (Settings).": "Laju uang tak tercatat, {amount} per hari, tidak dimasukkan ke perkiraan (Pengaturan).",
     "Unaccounted income, {amount} a day, is not counted on in the forecast.": "Pemasukan tak tercatat, {amount} per hari, tidak diperhitungkan dalam perkiraan.",
-    "The forecast counts on {amount} a day unaccounted, the average of {count} intervals.": {
-      "other": "Perkiraan memperhitungkan {amount} per hari tak tercatat, rata-rata dari {count} interval."
+    "Unaccounted on average: {day} a day, {month} a month ({count} intervals).": {
+      "other": "Tak tercatat rata-rata: {day} per hari, {month} per bulan ({count} interval)."
     },
+    "The forecast does not count on it: it may have been a one-off. If it repeats, add it as a recurring expense and the forecast will plan for it.": "Perkiraan tidak memperhitungkannya: itu mungkin kejadian sekali saja. Jika berulang, tambahkan sebagai pengeluaran berulang dan perkiraan akan memperhitungkannya.",
+    "Unaccounted spending": "Pengeluaran tak tercatat",
+    "Add as a recurring expense": "Tambah sebagai pengeluaran berulang",
+    "Spending outside the accounts is planned as a recurring expense: the next reconciliation shows what goes unaccounted beyond it.": "Pengeluaran di luar akun direncanakan sebagai pengeluaran berulang: rekonsiliasi berikutnya menunjukkan yang masih tak tercatat di luar itu.",
     "Report": "Laporan"
   },
   "history": {
@@ -139,6 +141,16 @@
   },
   "backup": {
     "Exported": "Diekspor",
+    "Export encrypted": "Ekspor terenkripsi",
+    "The SQLite file, encrypted with a password (AES-256). Without the password nobody can open it, Cashflow included: a forgotten password cannot be recovered.": "File SQLite, dienkripsi dengan kata sandi (AES-256). Tanpa kata sandi, tidak ada yang bisa membukanya, termasuk Cashflow: kata sandi yang terlupa tidak dapat dipulihkan.",
+    "Password": "Kata sandi",
+    "The password again": "Kata sandi sekali lagi",
+    "At least {count} characters": {
+      "other": "Minimal {count} karakter"
+    },
+    "The two passwords differ": "Kedua kata sandi tidak cocok",
+    "Export": "Ekspor",
+    "The file could not be written": "File tidak dapat ditulis",
     "This is not a Cashflow file": "Ini bukan file Cashflow",
     "{count} accounts": {
       "other": "{count} akun"
@@ -149,14 +161,21 @@
     "{count} reconciliations": {
       "other": "{count} rekonsiliasi"
     },
-    "Replace everything?": "Ganti semuanya?",
-    "{file}: {summary}. Everything here now is replaced by it.": "{file}: {summary}. Semua yang ada di sini sekarang digantikan olehnya.",
+    "Import the file": "Impor file",
+    "{file}: {summary}. It can replace everything in this database, or become a new database beside it.": "{file}: {summary}. File ini dapat menggantikan semuanya di basis data ini, atau menjadi basis data baru di sampingnya.",
+    "As a new database": "Sebagai basis data baru",
     "Replace everything": "Ganti semuanya",
     "Imported": "Diimpor",
-    "Every change is now copied to {file}": "Sekarang setiap perubahan disalin ke {file}",
-    "Create a new database?": "Buat basis data baru?",
-    "Everything here is deleted for good: accounts, operations, reconciliations and goals. Export the data first if it may be needed.": "Semua yang ada di sini dihapus selamanya: akun, operasi, rekonsiliasi, dan target. Ekspor data dulu jika mungkin masih dibutuhkan.",
-    "Delete and create": "Hapus dan buat"
+    "An encrypted file": "File terenkripsi",
+    "The file is encrypted. Type its password to import it.": "File ini terenkripsi. Masukkan kata sandinya untuk mengimpor file ini.",
+    "Wrong password, or the file is damaged": "Kata sandi salah, atau file rusak",
+    "The file was encrypted by a newer version of Cashflow: open it there, or update this one": "File ini dienkripsi oleh versi Cashflow yang lebih baru: buka di sana, atau perbarui versi ini",
+    "This browser cannot open encrypted files": "Browser ini tidak dapat membuka file terenkripsi",
+    "Delete this database?": "Hapus basis data ini?",
+    "Everything here is deleted for good: accounts, operations, reconciliations and goals. A new, empty database takes its place. Export the data first if it may be needed.": "Semua yang ada di sini dihapus selamanya: akun, operasi, rekonsiliasi, dan target. Basis data baru yang kosong menggantikannya. Ekspor data terlebih dahulu jika mungkin masih diperlukan.",
+    "{name} is deleted for good: its accounts, operations, reconciliations and goals. Export the data first if it may be needed.": "{name} dihapus selamanya: akun, operasi, rekonsiliasi, dan targetnya. Ekspor data terlebih dahulu jika mungkin masih diperlukan.",
+    "Delete": "Hapus",
+    "Every change is now copied to {file}": "Sekarang setiap perubahan disalin ke {file}"
   },
   "time": {
     "today": "hari ini",
@@ -171,8 +190,10 @@
     "Not within the forecast horizon": "Di luar cakrawala perkiraan",
     "The forecast starts with the first reconciliation": "Perkiraan dimulai dengan rekonsiliasi pertama",
     "Can buy on {date}": "Bisa dibeli pada {date}",
-    "Move up": "Naikkan",
-    "Move down": "Turunkan",
+    "After the goals above, which take {amount}": "Setelah target di atas, yang mengambil {amount}",
+    "Waits for {name}": "Menunggu {name}",
+    "Drag to change the order": "Seret untuk mengubah urutan",
+    "Priority {number}: drag, or move with the arrow keys": "Prioritas {number}: seret, atau pindahkan dengan tombol panah",
     "Edit": "Edit",
     "Needed": "Dibutuhkan",
     "Have now": "Ada sekarang",
@@ -181,7 +202,7 @@
     "Bought": "Dibeli",
     "Goals": "Target",
     "Goal": "Target",
-    "Each goal is measured against the same personal money: buying one is not taken out of another.": "Setiap target diukur terhadap uang pribadi yang sama: membeli satu tidak mengurangi yang lain.",
+    "Goals are bought from the top down: each counts on the money the ones above it leave. Drag a goal to change the order.": "Target dibeli dari atas ke bawah: masing-masing mengandalkan uang yang disisakan oleh yang di atasnya. Seret target untuk mengubah urutan.",
     "Something to buy? Add it, with how much should be left over, and the forecast tells you when.": "Ada sesuatu yang ingin dibeli? Tambahkan, beserta berapa yang harus tersisa, dan perkiraan akan memberi tahu kapan.",
     "Reached ({count})": "Tercapai ({count})",
     "Delete": "Hapus",
@@ -234,14 +255,29 @@
     "Expense": "Pengeluaran",
     "Transfer": "Transfer",
     "no account": "tanpa akun",
+    "Period": "Periode",
+    "Before {date}": "Sebelum {date}",
+    "Not reconciled yet: since {date}": "Belum direkonsiliasi: sejak {date}",
+    "Not reconciled yet": "Belum direkonsiliasi",
+    "Between reconciliations": "Antara rekonsiliasi",
+    "All operations": "Semua operasi",
+    "Dates…": "Tanggal…",
+    "From": "Dari",
+    "To": "Ke",
+    "{count} operations:": {
+      "other": "{count} operasi:"
+    },
     "Planned for {date}": "Direncanakan untuk {date}",
     "Saved": "Disimpan",
+    "Saved, outside the period shown": "Disimpan, di luar periode yang ditampilkan",
     "One-off": "Insidental",
-    "Save": "Simpan",
+    "Operation": "Operasi",
     "Planned": "Direncanakan",
     "Done": "Selesai",
     "Nothing yet. Add what the regular operations do not cover: a purchase, a bonus, a transfer.": "Belum ada apa-apa. Tambahkan yang tidak tercakup operasi rutin: pembelian, bonus, transfer.",
+    "Nothing in this period.": "Tidak ada apa-apa pada periode ini.",
     "One-off operation": "Operasi insidental",
+    "New one-off operation": "Operasi insidental baru",
     "Delete": "Hapus",
     "Delete this operation?": "Hapus operasi ini?",
     "It is removed from the records.": "Dihapus dari catatan.",
@@ -355,8 +391,8 @@
     "Totals are shown in": "Total ditampilkan dalam",
     "Add a currency below to pick it here.": "Tambahkan mata uang di bawah untuk memilihnya di sini.",
     "Forecast": "Perkiraan",
-    "Count on unaccounted spending at its average pace": "Perhitungkan pengeluaran tak tercatat pada laju rata-ratanya",
     "Averaging window": "Jendela rata-rata",
+    "For the pace of unaccounted money in the report.": "Untuk laju uang tak tercatat pada laporan.",
     "days": "hari",
     "Horizon": "Cakrawala",
     "years": "tahun",
@@ -386,8 +422,8 @@
     },
     "Export JSON": "Ekspor JSON",
     "Export SQLite": "Ekspor SQLite",
+    "Export encrypted…": "Ekspor terenkripsi…",
     "Import…": "Impor…",
-    "New database…": "Basis data baru…",
     "Settings": "Pengaturan"
   },
   "update": {
@@ -415,9 +451,13 @@
     "Wrong PIN": "PIN salah",
     "Wrong PIN. Try again in {time}.": "PIN salah. Coba lagi dalam {time}.",
     "Forgot the PIN?": "Lupa PIN?",
+    "Another database": "Basis data lain",
     "Start a new database?": "Mulai basis data baru?",
     "Without the PIN this database cannot be opened. A new, empty one takes its place: everything in this one is deleted for good.": "Tanpa PIN, basis data ini tidak dapat dibuka. Yang baru dan kosong menggantikannya: semua yang ada di basis data ini dihapus selamanya.",
     "Delete and start anew": "Hapus dan mulai ulang",
+    "The name of the database": "Nama basis data",
+    "To delete it, type its name: {name}": "Untuk menghapusnya, masukkan namanya: {name}",
+    "The name does not match": "Nama tidak cocok",
     "Current PIN": "PIN saat ini",
     "New PIN": "PIN baru",
     "The PIN again": "PIN sekali lagi",
@@ -440,5 +480,26 @@
     "The PIN of the file": "PIN file",
     "The file is protected by a PIN of its own. Type it to import the file; it then becomes the PIN here.": "File dilindungi oleh PIN-nya sendiri. Masukkan untuk mengimpor file; PIN itu kemudian menjadi PIN di sini.",
     "Import": "Impor"
+  },
+  "databases": {
+    "Main": "Utama",
+    "Type a name": "Masukkan nama",
+    "There is already a database with this name": "Sudah ada basis data dengan nama ini",
+    "Imported": "Diimpor",
+    "Name": "Nama",
+    "Create": "Buat",
+    "Choose a database": "Pilih basis data",
+    "New database": "Basis data baru",
+    "Database": "Basis data",
+    "Databases": "Basis data",
+    "Each database has its own accounts, operations, goals and PIN. With more than one, the app asks which to open when it starts.": "Setiap basis data memiliki akun, operasi, target, dan PIN sendiri. Jika lebih dari satu, aplikasi akan menanyakan mana yang akan dibuka saat memulai.",
+    "open": "terbuka",
+    "Rename the database": "Ganti nama basis data",
+    "Save": "Simpan",
+    "Rename…": "Ganti nama…",
+    "Open": "Buka",
+    "New database…": "Basis data baru…",
+    "Choose another database": "Pilih basis data lain",
+    "Delete this database…": "Hapus basis data ini…"
   }
 }

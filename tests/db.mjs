@@ -21,7 +21,7 @@ state.goals.push(
   { id: 'g2', name: 'Bike', amount: 50000, currency: 'EUR', rule: { kind: 'share', percent: 12.5 }, order: 1, doneAt: 9 },
 );
 state.accounts[2].archivedAt = at(2026, 10, 9);
-state.forecast = { includeUnaccounted: false, windowDays: 60, horizonYears: 3, remindDays: 7 };
+state.forecast = { windowDays: 60, horizonYears: 3, remindDays: 7 };
 
 const db = C.openDatabase(SQL);
 check('a new database is at the latest schema', C.schemaVersion(db), C.DB_VERSION);
@@ -80,6 +80,17 @@ reopened.exec("UPDATE meta SET value = 'zz' WHERE key = 'window_days'");
 const damaged = C.readState(reopened);
 check('a broken fee reads as 0', damaged.accounts.find((a) => a.id === 'wise').fee, 0);
 check('a broken setting reads as its default', damaged.forecast.windowDays, 90);
+
+// An old database still has the setting of the forecast that is gone: it is ignored, and the next save drops it.
+{
+  const old = C.openDatabase(SQL);
+  C.writeState(old, state);
+  old.exec("INSERT INTO meta (key, value) VALUES ('include_unaccounted', 1)");
+  const read = C.readState(old);
+  check('an old setting is not read', Object.keys(read.forecast).sort(), ['horizonYears', 'remindDays', 'windowDays']);
+  C.writeState(old, read);
+  check('… and the next save drops it', old.exec("SELECT COUNT(*) FROM meta WHERE key = 'include_unaccounted'")[0].values[0][0], 0);
+}
 
 // The migration from an empty file, as an old page left it: no tables, user_version 0.
 const blank = new SQL.Database();
