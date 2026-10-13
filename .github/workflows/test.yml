@@ -1,0 +1,43 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Typecheck, unit tests, build, browser tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      # Chrome is on the runners already; the test finds it at /usr/bin/google-chrome.
+      - run: npm run test:browser
+
+      # The whole point of the build: nothing in it reaches the network.
+      - name: No external references in the page
+        shell: bash
+        run: |
+          if grep -Eo '(src|href)="https?://[^"]*"' build/cashflow.html build/pages/index.html; then
+            echo "::error::An external src/href is in the built page"
+            exit 1
+          fi
+          grep -q "connect-src 'none'" build/cashflow.html
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cashflow
+          path: |
+            build/cashflow.html
+            build/pages
